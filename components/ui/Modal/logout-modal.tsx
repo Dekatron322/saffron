@@ -4,35 +4,15 @@ import React from "react"
 import Modal from "react-modal"
 import CloseIcon from "public/close-icon"
 import { ButtonModule } from "../Button/Button"
-import { useDispatch } from "react-redux"
-import { logout } from "app/api/store/authSlice"
-import { useRouter } from "next/navigation"
 
 interface LogoutModalProps {
   isOpen: boolean
   onRequestClose: () => void
+  onConfirm: () => void | Promise<void>
   loading: boolean
 }
 
-const LogoutModal: React.FC<LogoutModalProps> = ({ isOpen, onRequestClose, loading }) => {
-  const dispatch = useDispatch()
-  const router = useRouter()
-
-  const handleLogout = () => {
-    // Clear tokens from storage
-    localStorage.removeItem("authToken")
-    sessionStorage.removeItem("authToken")
-
-    // Dispatch logout action
-    dispatch(logout())
-
-    // Redirect to login page or home page
-    router.push("/signin") // Update with your login route
-
-    // Close the modal
-    onRequestClose()
-  }
-
+const LogoutModal: React.FC<LogoutModalProps> = ({ isOpen, onRequestClose, onConfirm, loading }) => {
   return (
     <Modal
       isOpen={isOpen}
@@ -54,13 +34,13 @@ const LogoutModal: React.FC<LogoutModalProps> = ({ isOpen, onRequestClose, loadi
             variant="danger"
             size="lg"
             className="w-full"
-            onClick={handleLogout}
+            onClick={onConfirm}
             disabled={loading}
           >
             {loading ? (
               <div className="flex items-center justify-center">
                 <svg
-                  className="mr-2 h-5 w-5 animate-spin"
+                  className="mr-2 size-5 animate-spin"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"

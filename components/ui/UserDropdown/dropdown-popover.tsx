@@ -52,10 +52,13 @@ const UserDropdown = () => {
 
   const getInitials = (name?: string | null) => {
     if (!name) return "US"
-    const names = name.split(" ")
-    let initials = names[0].substring(0, 1).toUpperCase()
-    if (names.length > 1) {
-      initials += names[names.length - 1].substring(0, 1).toUpperCase()
+    const parts = name.trim().split(/\s+/).filter(Boolean)
+    if (parts.length === 0) return "US"
+    const firstInitial = parts[0]?.substring(0, 1).toUpperCase() ?? "U"
+    let initials = firstInitial
+    if (parts.length > 1) {
+      const lastInitial = parts[parts.length - 1]?.substring(0, 1).toUpperCase() ?? "S"
+      initials += lastInitial
     }
     return initials
   }
@@ -93,7 +96,7 @@ const UserDropdown = () => {
         >
           <div className="relative">
             <UserIcon />
-            <div className="bg-primary absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-xs text-white">
+            <div className="bg-primary absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full text-xs text-white">
               {getInitials(userDetails.firstName || userDetails.userName)}
             </div>
           </div>
@@ -102,7 +105,7 @@ const UserDropdown = () => {
         {open && (
           <div className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-md bg-white shadow-lg">
             <div className="flex items-center gap-2 border-b px-4 py-2">
-              <div className="bg-primary flex h-10 w-10 items-center justify-center rounded-full text-white">
+              <div className="bg-primary flex size-10 items-center justify-center rounded-full text-white">
                 {getInitials(userDetails.firstName || userDetails.userName)}
               </div>
               <div className="flex flex-col gap-0">
