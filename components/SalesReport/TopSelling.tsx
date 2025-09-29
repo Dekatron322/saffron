@@ -1,15 +1,15 @@
 "use client"
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
   BarElement,
-  PointElement,
+  CategoryScale,
+  Chart as ChartJS,
+  ChartOptions,
+  Legend,
   LineElement,
+  LinearScale,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
-  ChartOptions,
 } from "chart.js"
 import { Chart } from "react-chartjs-2"
 import { ChartData } from "chart.js"

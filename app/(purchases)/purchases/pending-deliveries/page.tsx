@@ -1,8 +1,8 @@
 // app/purchases/pending-deliveries/page.tsx
 "use client"
 
-import React, { useState, useEffect, useRef } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import React, { useEffect, useRef, useState } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import { RxCaretSort, RxDotsVertical } from "react-icons/rx"
 import { MdOutlineArrowBackIosNew, MdOutlineArrowForwardIos, MdOutlineCheckBoxOutlineBlank } from "react-icons/md"
 import { ButtonModule } from "components/ui/Button/Button"
@@ -12,14 +12,13 @@ import EmptyState from "public/empty-state"
 import { useRouter } from "next/navigation"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import {
-  fetchPendingDeliveriesData,
   fetchPendingDeliveriesWithCurrentFilters,
-  selectPendingPurchaseOrders,
-  selectPendingDeliveriesLoading,
   selectPendingDeliveriesError,
+  selectPendingDeliveriesLoading,
   selectPendingDeliveriesPagination,
   selectPendingDeliveriesSummary,
   setFilters,
+  selectPendingPurchaseOrders,
 } from "app/api/store/pendingDeliveriesSlice"
 import DashboardNav from "components/Navbar/DashboardNav"
 import DatePicker from "react-datepicker"

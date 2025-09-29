@@ -1,20 +1,13 @@
 "use client"
-import React, { useEffect, useState, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
-
-// Importing modular components
-import { PasswordInputModule } from "components/ui/Input/PasswordInput"
 import { ButtonModule } from "components/ui/Button/Button"
-import Footer from "components/Footer/Footer"
-import { FormInputModule } from "components/ui/Input/Input"
 import { notify } from "components/ui/Notification/Notification"
 
 const VerifyEmail: React.FC = () => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [showSuccessNotification, setShowSuccessNotification] = useState(false)
   const [showErrorNotification, setShowErrorNotification] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
@@ -161,7 +154,7 @@ const VerifyEmail: React.FC = () => {
                 </ButtonModule>
               </form>
               <p className="mt-4 text-center">
-                Didn't receive a code?{" "}
+                Didn&apos;t receive a code?{" "}
                 <button className="text-[#00a4a6] transition-all duration-200 ease-in-out hover:text-[#07898c] focus:outline-none">
                   Resend Code
                 </button>

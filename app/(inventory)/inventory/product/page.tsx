@@ -10,10 +10,10 @@ import EmptyState from "public/empty-state"
 import FilterIcon from "public/Icons/filter-icon"
 import PurchaseIcon from "public/Icons/purchase-icon"
 import SalesIcon from "public/Icons/sales-icon"
-import React, { useState, useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
-import { fetchAllProducts, selectProducts, fetchStockSummary, selectStockSummary } from "app/api/store/productSlice"
-import { motion, AnimatePresence } from "framer-motion"
+import { fetchAllProducts, fetchStockSummary, selectProducts, selectStockSummary } from "app/api/store/productSlice"
+import { AnimatePresence, motion } from "framer-motion"
 import { useAppDispatch } from "app/api/store/store"
 
 interface Transaction {

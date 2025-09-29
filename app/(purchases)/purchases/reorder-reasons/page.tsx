@@ -3,22 +3,22 @@
 import React, { useEffect, useState } from "react"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import {
+  createPurchaseReturnReason,
   fetchPurchaseReturnReasons,
   selectPurchaseReturnReasons,
-  selectPurchaseReturnReasonsLoading,
   selectPurchaseReturnReasonsError,
-  createPurchaseReturnReason,
-  selectCreatingReturnReason,
-  selectCreateReturnReasonError,
+  selectPurchaseReturnReasonsLoading,
   selectCreatedReturnReason,
+  selectCreateReturnReasonError,
+  selectCreatingReturnReason,
 } from "app/api/store/purchaseSlice"
 import DashboardNav from "components/Navbar/DashboardNav"
-import { FiAlertCircle, FiBox, FiCalendar, FiCheckCircle, FiXCircle, FiArrowLeft } from "react-icons/fi"
+import { FiAlertCircle, FiArrowLeft, FiBox, FiCalendar, FiXCircle } from "react-icons/fi"
 import { ButtonModule } from "components/ui/Button/Button"
 import Modal from "react-modal"
 import CloseIcon from "public/close-icon"
 
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { notify } from "components/ui/Notification/Notification"
 import { FormInputModule } from "components/ui/Input/Input"
 

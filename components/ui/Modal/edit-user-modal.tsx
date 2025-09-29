@@ -1,11 +1,11 @@
 "use client"
-import React, { useState, useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import Modal from "react-modal"
 import CloseIcon from "public/close-icon"
 import { ButtonModule } from "../Button/Button"
 import { FormInputModule } from "../Input/Input"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
-import { updateUserDetails, fetchAllUsers } from "app/api/store/userManagementSlice"
+import { fetchAllUsers, updateUserDetails } from "app/api/store/userManagementSlice"
 
 interface EditUserModalProps {
   isOpen: boolean
@@ -112,7 +112,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onRequestClose, u
         updateUserDetails({
           userId,
           userName: formData.userName,
-          firstName: formData.firstName || null,
+          firstName: formData.firstName,
           email: formData.email,
           mobileNo: formData.mobileNo,
           organisationId: formData.organisationId,
@@ -146,8 +146,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onRequestClose, u
             onChange={handleChange}
             className="mb-4"
             placeholder="Enter username"
-            error={formErrors.userName}
-            required
+            // error={formErrors.userName}
+            // required
           />
 
           <FormInputModule
@@ -168,8 +168,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onRequestClose, u
             onChange={handleChange}
             className="mb-4"
             placeholder="Enter email"
-            error={formErrors.email}
-            required
+            // error={formErrors.email}
+            // required
           />
 
           <FormInputModule
@@ -180,8 +180,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onRequestClose, u
             onChange={handleChange}
             className="mb-4"
             placeholder="Enter mobile number"
-            error={formErrors.mobileNo}
-            required
+            // error={formErrors.mobileNo}
+            // required
           />
 
           <FormInputModule
@@ -189,16 +189,13 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onRequestClose, u
             name="organisationId"
             type="number"
             value={formData.organisationId.toString()}
-            onChange={(e) =>
-              handleChange({
-                ...e,
-                target: {
-                  ...e.target,
-                  name: "organisationId",
-                  value: parseInt(e.target.value) || 0,
-                },
-              })
-            }
+            onChange={(e) => {
+              const val = e.target.value
+              setFormData((prev) => ({
+                ...prev,
+                organisationId: val === "" ? 0 : Number(val),
+              }))
+            }}
             className="mb-6"
             placeholder="Enter organization ID"
           />
@@ -219,7 +216,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onRequestClose, u
               {updateLoading ? (
                 <div className="flex items-center justify-center">
                   <svg
-                    className="mr-2 h-5 w-5 animate-spin"
+                    className="mr-2 size-5 animate-spin"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"

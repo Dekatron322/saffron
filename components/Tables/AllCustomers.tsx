@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { RxCaretSort, RxDotsVertical } from "react-icons/rx"
 import { MdOutlineArrowBackIosNew, MdOutlineArrowForwardIos, MdOutlineCheckBoxOutlineBlank } from "react-icons/md"
 import { ButtonModule } from "components/ui/Button/Button"
@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation"
 import { deleteCustomer, fetchAllCustomers, selectCustomers } from "app/api/store/customerSlice"
 import DeleteCustomerModal from "components/ui/Modal/delete-customer-modal"
 import CustomerDetailsModal from "components/ui/Modal/customer-details-modal"
-import { motion, AnimatePresence } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 import ArrowIcon from "public/Icons/arrowIcon"
 
 type SortOrder = "asc" | "desc" | null

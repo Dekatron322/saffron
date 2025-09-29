@@ -8,7 +8,7 @@ import { notify } from "components/ui/Notification/Notification"
 import { GoArrowLeft } from "react-icons/go"
 import Link from "next/link"
 import { forgotPassword, resetForgotPassword, selectForgotPassword } from "app/api/store/authSlice"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 
 // Animation variants
 const containerVariants = {
@@ -152,7 +152,8 @@ const ForgotPassword: React.FC = () => {
                   Forgot Your Password?
                 </motion.p>
                 <motion.p className="text-[#131313]" variants={itemVariants}>
-                  Enter the email address associated with your account, and we'll send you a link to reset your password
+                  Enter the email address associated with your account, and we&apos;ll send you a link to reset your
+                  password
                 </motion.p>
               </motion.div>
 

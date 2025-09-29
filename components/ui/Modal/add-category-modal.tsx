@@ -8,7 +8,7 @@ import { FormInputModule } from "../Input/Input"
 import { useDispatch } from "react-redux"
 import { createCategory } from "app/api/store/productSlice"
 import { notify } from "../Notification/Notification"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 
 interface AddCategoryModalProps {
   isOpen: boolean

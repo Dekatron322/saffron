@@ -8,10 +8,10 @@ import CardPosIcon from "public/card-pos-icon"
 import ExportIcon from "public/export-icon"
 import FilterIcon from "public/Icons/filter-icon"
 import EmptyState from "public/empty-state"
-import React, { useState, useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import { fetchAllSuppliers, selectSuppliers } from "app/api/store/supplierSlice"
-import { motion, AnimatePresence } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 
 interface Supplier {
   id: number

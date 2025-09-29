@@ -1,7 +1,7 @@
 // components/ui/Cards/CustomerDetailsCard.tsx
 import React from "react"
 import { Customer } from "app/api/store/customerSlice"
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaIdCard } from "react-icons/fa"
+import { FaEnvelope, FaIdCard, FaMapMarkerAlt, FaPhone } from "react-icons/fa"
 import StatusBadge from "./status-badge"
 
 interface CustomerDetailsCardProps {

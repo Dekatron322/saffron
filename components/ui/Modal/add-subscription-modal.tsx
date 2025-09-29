@@ -7,7 +7,7 @@ import CloseIcon from "public/close-icon"
 import { ButtonModule } from "../Button/Button"
 import { FormInputModule } from "../Input/Input"
 import { useAppDispatch } from "app/api/store/store"
-import { createSubscriptionName, addSubscriptionPlan, addSubscriptionDetails } from "app/api/store/subscriptionSlice"
+import { addSubscriptionDetails, addSubscriptionPlan, createSubscriptionName } from "app/api/store/subscriptionSlice"
 import { notify } from "../Notification/Notification"
 import { TextAreaModule } from "../Input/Textarea"
 
@@ -322,6 +322,8 @@ const AddSubscriptionModal: React.FC<AddSubscriptionModalProps> = ({ isOpen, onC
     },
   ]
 
+  const currentStep = steps[activeStep]
+
   return (
     <Modal
       isOpen={isOpen}
@@ -333,9 +335,9 @@ const AddSubscriptionModal: React.FC<AddSubscriptionModalProps> = ({ isOpen, onC
       ariaHideApp={false}
     >
       <div className="flex w-full items-center justify-between bg-[#F5F8FA] p-4">
-        <h2 className="text-lg font-bold">{steps[activeStep].title}</h2>
+        <h2 className="text-lg font-bold">{currentStep?.title ?? ""}</h2>
         <div className="flex items-center gap-2">
-          <ButtonModule variant="text" size="sm" onClick={handleCancel} className="text-gray-500 hover:text-gray-700">
+          <ButtonModule variant="ghost" size="sm" onClick={handleCancel} className="text-gray-500 hover:text-gray-700">
             Cancel
           </ButtonModule>
           <div onClick={handleModalClose} className="cursor-pointer">
@@ -349,7 +351,7 @@ const AddSubscriptionModal: React.FC<AddSubscriptionModalProps> = ({ isOpen, onC
         {steps.map((_, index) => (
           <React.Fragment key={index}>
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full ${
+              className={`flex size-8 items-center justify-center rounded-full ${
                 completedSteps.includes(index)
                   ? "bg-[#00a4a6] text-white"
                   : activeStep === index
@@ -375,7 +377,7 @@ const AddSubscriptionModal: React.FC<AddSubscriptionModalProps> = ({ isOpen, onC
       </div>
 
       <div className="px-4 pb-6">
-        {steps[activeStep].content}
+        {currentStep?.content ?? null}
 
         <div className="mt-6 flex justify-between">
           {activeStep > 0 ? (
@@ -390,13 +392,13 @@ const AddSubscriptionModal: React.FC<AddSubscriptionModalProps> = ({ isOpen, onC
             variant="primary"
             className="rounded-md"
             size="lg"
-            onClick={steps[activeStep].action}
+            onClick={currentStep?.action ?? (() => {})}
             disabled={isLoading}
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
                 <svg
-                  className="mr-2 h-5 w-5 animate-spin"
+                  className="mr-2 size-5 animate-spin"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"

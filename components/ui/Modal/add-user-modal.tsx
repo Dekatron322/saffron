@@ -1,5 +1,5 @@
 // components/ui/Modal/add-user-modal.tsx
-import React, { useState, useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { FormInputModule } from "../Input/Input"
 import { ButtonModule } from "../Button/Button"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
@@ -10,7 +10,7 @@ import {
   selectOrganisationsLoading,
 } from "app/api/store/userManagementSlice"
 import { notify } from "../Notification/Notification"
-import { motion, AnimatePresence } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 import { DropdownPopoverModule } from "../Input/DropdownModule"
 
 interface AddUserModalProps {

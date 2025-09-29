@@ -2,7 +2,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 import CloseIcon from "public/close-icon"
 import { ButtonModule } from "../Button/Button"
 import { FormInputModule } from "../Input/Input"

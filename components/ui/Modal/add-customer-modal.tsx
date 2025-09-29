@@ -1,11 +1,11 @@
 // components/PaymentSidebar/PaymentSidebar.tsx
-import React, { useState, useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { FormInputModule } from "../Input/Input"
 import { ButtonModule } from "../Button/Button"
 import { useAppDispatch } from "app/api/store/store"
 import { createCustomer } from "app/api/store/customerSlice"
 import { notify } from "../Notification/Notification"
-import { motion, AnimatePresence } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 
 interface PaymentSidebarProps {
   isOpen: boolean

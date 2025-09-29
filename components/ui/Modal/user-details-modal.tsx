@@ -9,9 +9,9 @@ import { jsPDF } from "jspdf"
 import html2canvas from "html2canvas"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import { fetchUserDetail } from "app/api/store/userManagementSlice"
-import { selectOrganizationDetails, getOrganizationDetails } from "app/api/store/authSlice"
+import { getOrganizationDetails, selectOrganizationDetails } from "app/api/store/authSlice"
 import { RxAvatar } from "react-icons/rx"
-import { FiMail, FiPhone, FiUser, FiShield, FiHome, FiBriefcase, FiFileText, FiCreditCard } from "react-icons/fi"
+import { FiBriefcase, FiCreditCard, FiFileText, FiHome, FiMail, FiPhone, FiUser } from "react-icons/fi"
 import Image from "next/image"
 
 interface UserDetailsModalProps {

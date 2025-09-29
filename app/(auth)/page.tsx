@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 
 import { notify } from "components/ui/Notification/Notification"
 import { PasswordInputModule } from "components/ui/Input/PasswordInput"
@@ -264,7 +264,7 @@ const SignIn: React.FC = () => {
               </motion.form>
 
               <motion.p className="mt-4 text-center" variants={itemVariants}>
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link
                   href="/signup"
                   className="text-[#00a4a6] transition-all duration-200 ease-in-out hover:text-[#07898c]"

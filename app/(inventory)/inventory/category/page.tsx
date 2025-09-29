@@ -9,10 +9,10 @@ import AddBusiness from "public/add-business"
 import ArrowForwardIcon from "public/arrow-forward-icon"
 import EmptyState from "public/empty-state"
 import FilterIcon from "public/Icons/filter-icon"
-import React, { useState, useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { RxDotsVertical } from "react-icons/rx"
 import { useDispatch, useSelector } from "react-redux"
-import { motion, AnimatePresence } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 
 interface Category {
   catId: number

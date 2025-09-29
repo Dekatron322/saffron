@@ -3,23 +3,23 @@ import DashboardNav from "components/Navbar/DashboardNav"
 import { ButtonModule } from "components/ui/Button/Button"
 import { SearchModule } from "components/ui/Search/search-module"
 import { useRouter, useSearchParams } from "next/navigation"
-import React, { useState, useEffect, useMemo, useRef } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import { fetchAllSuppliers, selectSuppliers } from "app/api/store/supplierSlice"
-import { selectProducts, fetchAllProducts, selectCategories, fetchAllCategories } from "app/api/store/productSlice"
+import { fetchAllProducts, fetchAllCategories, selectCategories, selectProducts } from "app/api/store/productSlice"
 import {
   createPurchaseOrder,
+  fetchLowStockItems,
+  resetOrderStatus,
   selectCreatingOrder,
   selectCreateOrderError,
-  selectOrderSuccess,
-  resetOrderStatus,
-  fetchLowStockItems,
   selectLowStockItems,
+  selectOrderSuccess,
 } from "app/api/store/reorderSuggestionSlice"
 import { FormInputModule } from "components/ui/Input/Input"
 import { DropdownPopoverModule } from "components/ui/Input/DropdownModule"
-import { motion, AnimatePresence } from "framer-motion"
-import { notify, NotificationProvider } from "components/ui/Notification/Notification"
+import { AnimatePresence, motion } from "framer-motion"
+import { NotificationProvider, notify } from "components/ui/Notification/Notification"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import { fetchAllUnits, selectUnits } from "app/api/store/unitSlice"

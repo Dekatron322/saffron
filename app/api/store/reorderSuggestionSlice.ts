@@ -1,5 +1,5 @@
 // src/store/reorderSuggestionSlice.ts
-import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit"
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { AppDispatch, RootState } from "./store"
 import axios from "axios"
 import { API_CONFIG } from "../config/api"
@@ -224,8 +224,13 @@ const reorderSuggestionSlice = createSlice({
   },
 })
 
-export const { fetchLowStockItemsStart, fetchLowStockItemsSuccess, fetchLowStockItemsFailure, clearLowStockItems, resetOrderStatus } =
-  reorderSuggestionSlice.actions
+export const {
+  fetchLowStockItemsStart,
+  fetchLowStockItemsSuccess,
+  fetchLowStockItemsFailure,
+  clearLowStockItems,
+  resetOrderStatus,
+} = reorderSuggestionSlice.actions
 
 export const fetchLowStockItems = () => async (dispatch: AppDispatch) => {
   try {

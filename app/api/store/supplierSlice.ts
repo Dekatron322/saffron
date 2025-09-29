@@ -1,5 +1,5 @@
 // src/store/supplierSlice.ts
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit"
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { createSelector } from "@reduxjs/toolkit"
 import { AppDispatch, RootState } from "./store"
 import axios from "axios"

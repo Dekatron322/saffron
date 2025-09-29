@@ -1,6 +1,6 @@
 "use client"
 
-import { selectOrganizationDetails, selectUserDetails, selectAuth, selectUpdateUser } from "app/api/store/authSlice"
+import { selectAuth, selectOrganizationDetails, selectUserDetails, selectUpdateUser } from "app/api/store/authSlice"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import DashboardNav from "components/Navbar/DashboardNav"
 import Image from "next/image"

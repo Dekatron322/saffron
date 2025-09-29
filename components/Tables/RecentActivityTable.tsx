@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { RxCaretSort, RxDotsVertical } from "react-icons/rx"
 import { MdOutlineArrowBackIosNew, MdOutlineArrowForwardIos, MdOutlineCheckBoxOutlineBlank } from "react-icons/md"
 import OutgoingIcon from "public/outgoing-icon"

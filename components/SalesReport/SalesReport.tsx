@@ -1,19 +1,16 @@
 "use client"
-
-import OverviewCard from "components/ui/CardMenu/overview-card"
-import RecentActivityTable from "components/Tables/RecentActivityTable"
 import SalesReportCard from "components/ui/CardMenu/sales-report-card"
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
   BarElement,
-  PointElement,
+  CategoryScale,
+  Chart as ChartJS,
+  ChartOptions,
+  Legend,
   LineElement,
+  LinearScale,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
-  ChartOptions,
 } from "chart.js"
 import { Chart } from "react-chartjs-2"
 import TransactionsOverviewCard from "components/ui/CardMenu/transaction-overview-card"

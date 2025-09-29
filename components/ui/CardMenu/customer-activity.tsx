@@ -1,7 +1,6 @@
 // components/ui/Cards/CustomerActivity.tsx
 import React from "react"
-import { Customer } from "app/api/store/customerSlice"
-import { FaHistory, FaShoppingCart, FaMoneyBillWave } from "react-icons/fa"
+import { FaHistory, FaShoppingCart } from "react-icons/fa"
 
 interface CustomerActivityProps {
   customerId: number

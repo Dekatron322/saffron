@@ -8,7 +8,7 @@ import { FormInputModule } from "../Input/Input"
 import { useDispatch } from "react-redux"
 import { notify } from "../Notification/Notification"
 import { addUnit } from "app/api/store/unitSlice"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 
 interface AddUnitModalProps {
   isOpen: boolean

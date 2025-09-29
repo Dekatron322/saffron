@@ -2,18 +2,18 @@
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import {
   fetchAllSubscriptions,
+  fetchSubscriptionTypeByName,
   selectSubscriptions,
   updateSubscriptionDetails,
-  fetchSubscriptionTypeByName,
 } from "app/api/store/subscriptionSlice"
 import { ButtonModule } from "components/ui/Button/Button"
 import { useRouter } from "next/navigation"
 import CheckIcon from "public/check"
 import Check2Icon from "public/check-icon"
-import React, { useState, useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import AddSubscriptionModal from "../Modal/add-subscription-modal"
 import EditSubscriptionModal from "../Modal/edit-subscription-modal"
-import { motion, AnimatePresence } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 
 // Local type describing the shape of each item in `mappedPlans`
 type MappedPlan = {
@@ -192,23 +192,25 @@ const SubscriptionsTab = () => {
       (plan) =>
         plan.planName && (plan.price?.monthly || plan.price?.yearly) && plan.keyFeatures && plan.keyFeatures.length > 0
     )
-    .map((plan, index): MappedPlan => ({
-      id: index + 1,
-      subscriptionTypeId: plan.subscriptionTypeId,
-      name: plan.planName,
-      tagline: plan.description,
-      monthlyPrice: plan.price.monthly,
-      yearlyPrice: plan.price.yearly,
-      features: plan.keyFeatures.flatMap((feature) =>
-        typeof feature === "string" ? feature.split(",").map((f) => f.trim()) : [feature]
-      ),
-      targetAudience: plan.targetAudience,
-      points: plan.points,
-      discount: plan.discount || 0,
-      bgColor: index % 2 === 1 ? "bg-[#00a4a6]" : "bg-white",
-      textColor: index % 2 === 1 ? "text-white" : "text-[#00a4a6]",
-      buttonVariant: index % 2 === 1 ? "secondary" : "outline",
-    }))
+    .map(
+      (plan, index): MappedPlan => ({
+        id: index + 1,
+        subscriptionTypeId: plan.subscriptionTypeId,
+        name: plan.planName,
+        tagline: plan.description,
+        monthlyPrice: plan.price.monthly,
+        yearlyPrice: plan.price.yearly,
+        features: plan.keyFeatures.flatMap((feature) =>
+          typeof feature === "string" ? feature.split(",").map((f) => f.trim()) : [feature]
+        ),
+        targetAudience: plan.targetAudience,
+        points: plan.points,
+        discount: plan.discount || 0,
+        bgColor: index % 2 === 1 ? "bg-[#00a4a6]" : "bg-white",
+        textColor: index % 2 === 1 ? "text-white" : "text-[#00a4a6]",
+        buttonVariant: index % 2 === 1 ? "secondary" : "outline",
+      })
+    )
 
   return (
     <motion.div
@@ -242,8 +244,8 @@ const SubscriptionsTab = () => {
           <h2 className="text-xl font-semibold">Enjoy extra discounts and exclusive perks with an upgraded plan.</h2>
           <p className="mt-2">
             Unlock exclusive discounts, earn loyalty points, and enjoy premium healthcare benefits for you and your
-            family. Whether you're managing prescriptions or prioritizing wellness, there's a plan that fits your
-            lifestyle.
+            family. Whether you&apos;re managing prescriptions or prioritizing wellness, there&apos;s a plan that fits
+            your lifestyle.
           </p>
         </div>
       </motion.div>

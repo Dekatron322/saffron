@@ -4,23 +4,13 @@ import clsx from "clsx"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
-import {
-  BusinessLogo,
-  ChatIcon,
-  DashboardIcon,
-  EmployeeLogo,
-  NoteIcon,
-  Pricing,
-  ServiceIcon,
-  SupportIcon,
-  UtilityIcon,
-} from "./Icons"
+import { BusinessLogo, DashboardIcon, EmployeeLogo, Pricing } from "./Icons"
 import SettingIcon from "public/setting-icon"
 
 const links = [
   { name: "Dashboard", href: "/otech-plus/dashboard", icon: DashboardIcon },
   { name: "Transactions", href: "/otech-plus/transactions", icon: Pricing },
-  { name: "Customers", href: "/otech-plus/customers", icon: ServiceIcon },
+  { name: "Customers", href: "/otech-plus/customers", icon: Pricing },
   //   { name: "Virtual Accounts", href: "/otech-plus/virtual-accounts", icon: NoteIcon },
   { name: "Businesses", href: "/otech-plus/businesses", icon: BusinessLogo },
   { name: "Employees", href: "/otech-plus/employee", icon: EmployeeLogo },

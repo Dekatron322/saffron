@@ -3,17 +3,17 @@ import TotalAssets from "public/total-assets"
 import UpIcon from "public/Icons/up-icon"
 import DownIcon from "public/Icons/down-icon"
 import {
-  ResponsiveContainer,
+  Bar,
+  BarChart,
   CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  Legend,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts"
 
 const TransactionsOverviewCard = () => {

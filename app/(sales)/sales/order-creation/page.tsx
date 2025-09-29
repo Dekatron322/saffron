@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import CardPosIcon from "public/card-pos-icon"
 import EmptyState from "public/empty-state"
 import FilterIcon from "public/Icons/filter-icon"
-import React, { useState, useEffect } from "react"
+import React, { useEffect, useState } from "react"
 
 interface Customer {
   id: string

@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { ButtonModule } from "components/ui/Button/Button"
 import { notify } from "components/ui/Notification/Notification"
@@ -155,7 +155,7 @@ const ResetPin: React.FC = () => {
                 </ButtonModule>
               </form>
               <p className="mt-4 text-center">
-                Didn't receive a code?{" "}
+                Didn&apos;t receive a code?{" "}
                 <button className="text-[#00a4a6] transition-all duration-200 ease-in-out hover:text-[#07898c] focus:outline-none">
                   Resend Code
                 </button>

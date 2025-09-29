@@ -1,10 +1,10 @@
 // app/purchases/units-ordered/page.tsx
 "use client"
 
-import React, { useState, useEffect, useRef } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { RxCaretSort, RxDotsVertical } from "react-icons/rx"
-import { MdOutlineArrowBackIosNew, MdOutlineArrowForwardIos, MdOutlineCheckBoxOutlineBlank } from "react-icons/md"
+import React, { useEffect, useRef, useState } from "react"
+import { AnimatePresence, motion } from "framer-motion"
+import { RxDotsVertical } from "react-icons/rx"
+import { MdOutlineArrowBackIosNew, MdOutlineArrowForwardIos } from "react-icons/md"
 import { ButtonModule } from "components/ui/Button/Button"
 import ExportIcon from "public/export-icon"
 import { SearchModule } from "components/ui/Search/search-module"
@@ -12,14 +12,13 @@ import EmptyState from "public/empty-state"
 import { useRouter } from "next/navigation"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import {
-  fetchUnitsOrderedData,
   fetchUnitsOrderedWithCurrentFilters,
+  setFilters,
   selectOrders,
-  selectUnitsOrderedLoading,
   selectUnitsOrderedError,
   selectUnitsOrderedFilters,
+  selectUnitsOrderedLoading,
   selectUnitsOrderedSummary,
-  setFilters,
   setUnitType,
 } from "app/api/store/unitsOrderedSlice"
 import DashboardNav from "components/Navbar/DashboardNav"

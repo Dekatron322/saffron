@@ -8,7 +8,7 @@ import { notify } from "components/ui/Notification/Notification"
 import { GoArrowLeft } from "react-icons/go"
 import Link from "next/link"
 import { resetPasswordConfirm, resetPasswordState, selectResetPassword } from "app/api/store/authSlice"
-import { motion, AnimatePresence } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 
 // Types and type guards
 type ForgotPasswordData = {

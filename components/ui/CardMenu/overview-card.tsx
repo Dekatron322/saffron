@@ -5,17 +5,17 @@ import { ButtonModule } from "../Button/Button"
 import CustomerIcon from "public/customer-icon"
 import AccountIcon from "public/accounts-icon"
 import {
-  PieChart,
-  Pie,
+  CartesianGrid,
   Cell,
-  ResponsiveContainer,
   Legend,
-  LineChart,
   Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
 } from "recharts"
 import UpIcon from "public/Icons/up-icon"
 import DownIcon from "public/Icons/down-icon"

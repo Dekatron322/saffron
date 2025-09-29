@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { ButtonModule } from "components/ui/Button/Button"
 import { DropdownPopoverModule } from "components/ui/Input/DropdownModule"
 import { FormInputModule } from "components/ui/Input/Input"
@@ -10,19 +10,19 @@ import AddBusiness from "public/add-business"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import {
   createProduct,
-  fetchAllCategories,
   fetchAllBranches,
+  fetchAllCategories,
+  fetchAllHSN,
+  selectBranches,
   selectCategories,
   selectCreateProduct,
-  selectBranches,
-  fetchAllHSN,
   selectHSN,
 } from "app/api/store/productSlice"
 import { fetchAllSuppliers, selectSuppliers } from "app/api/store/supplierSlice"
 import { fetchAllUnits, selectUnits } from "app/api/store/unitSlice"
 import { createBatch, fetchAllBatches, selectBatches } from "app/api/store/batchSlice"
 import { notify } from "components/ui/Notification/Notification"
-import { motion, AnimatePresence } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 
 interface Category {
   catId: number
