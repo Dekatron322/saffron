@@ -120,13 +120,20 @@ const ReorderCreation = () => {
   // Get supplier ID and product IDs from URL parameters
   const supplierId = searchParams.get("supplierId") ? parseInt(searchParams.get("supplierId") as string) : null
   const productIdsParam = searchParams.get("productIds")
+
   // Memoize decoded productIds to keep a stable reference across renders
   const productIds = useMemo(() => {
-    return productIdsParam
-      ? decodeURIComponent(productIdsParam)
-          .split(",")
-          .map((id) => parseInt(id))
-      : []
+    if (!productIdsParam) return []
+
+    try {
+      return decodeURIComponent(productIdsParam)
+        .split(",")
+        .map((id) => parseInt(id))
+        .filter((id) => !isNaN(id))
+    } catch (error) {
+      console.error("Error decoding productIds:", error)
+      return []
+    }
   }, [productIdsParam])
 
   // Redux state selectors
