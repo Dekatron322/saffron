@@ -113,9 +113,9 @@ interface SupplierDetailsModalProps {
 }
 
 const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ isOpen, onRequestClose, supplier, onReorder }) => {
-  if (!supplier) return null
-
   const [selectedProducts, setSelectedProducts] = useState<number[]>([])
+
+  if (!supplier) return null
 
   const handleProductSelect = (productId: number) => {
     if (selectedProducts.includes(productId)) {
@@ -237,7 +237,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ isOpen, onR
                     <input
                       type="checkbox"
                       aria-label="Select all products"
-                      className="h-4 w-4 cursor-pointer align-middle"
+                      className="size-4 cursor-pointer align-middle"
                       checked={allSelected}
                       ref={(el) => {
                         if (el) el.indeterminate = someSelected
@@ -266,7 +266,7 @@ const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({ isOpen, onR
                         <input
                           type="checkbox"
                           aria-label={`Select ${product.productName}`}
-                          className="h-4 w-4 cursor-pointer bg-white align-middle"
+                          className="size-4 cursor-pointer bg-white align-middle"
                           checked={isSelected}
                           onChange={() => handleProductSelect(product.productId)}
                         />
