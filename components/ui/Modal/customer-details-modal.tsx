@@ -11,7 +11,7 @@ import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import { fetchCustomerById, fetchSalesByCustomerDetails } from "app/api/store/customerSlice"
 
 import { RxAvatar } from "react-icons/rx"
-import { FiCalendar, FiCreditCard, FiDollarSign, FiMapPin, FiMail, FiPackage, FiPhone } from "react-icons/fi"
+import { FiCalendar, FiCreditCard, FiDollarSign, FiMail, FiMapPin, FiPackage, FiPhone } from "react-icons/fi"
 import { TbCoin } from "react-icons/tb"
 import { format } from "date-fns"
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa"
