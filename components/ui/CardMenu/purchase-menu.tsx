@@ -13,9 +13,9 @@ import {
 import {
   fetchUnitsOrderedData,
   selectTotalUnitsOrdered,
-  selectUnitsPercentageChange,
   selectUnitsOrderedError,
   selectUnitsOrderedLoading,
+  selectUnitsPercentageChange,
 } from "app/api/store/unitsOrderedSlice"
 import {
   fetchPendingDeliveriesData,
