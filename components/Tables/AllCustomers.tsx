@@ -149,6 +149,9 @@ const AllCustomers = () => {
     }
   )
 
+  // Fix: Add displayName to the memoized component
+  DropdownMenu.displayName = "DropdownMenu"
+
   const handleDeleteConfirmation = async (reason: string) => {
     if (!customerToDelete) return
 
