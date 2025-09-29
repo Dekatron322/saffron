@@ -40,12 +40,7 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({ isOpen, o
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => {
-      if (
-        name === "monthlyPrice" ||
-        name === "yearlyPrice" ||
-        name === "points" ||
-        name === "discount"
-      ) {
+      if (name === "monthlyPrice" || name === "yearlyPrice" || name === "points" || name === "discount") {
         return { ...prev, [name]: Number(value) } as FormData
       }
       return { ...prev, [name]: value } as FormData
