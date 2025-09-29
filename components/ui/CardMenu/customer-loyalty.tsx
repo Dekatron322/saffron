@@ -1,7 +1,7 @@
 // components/ui/Cards/CustomerLoyalty.tsx
 import React from "react"
 import { Customer } from "app/api/store/customerSlice"
-import { FaStar, FaGift } from "react-icons/fa"
+import { FaGift, FaStar } from "react-icons/fa"
 
 interface CustomerLoyaltyProps {
   customer: Customer
