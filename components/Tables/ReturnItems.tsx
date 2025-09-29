@@ -132,7 +132,7 @@ const ReturnNoteModal: React.FC<ReturnNoteModalProps> = ({
             {loading ? (
               <div className="flex items-center justify-center">
                 <svg
-                  className="mr-2 h-5 w-5 animate-spin"
+                  className="mr-2 size-5 animate-spin"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -218,13 +218,17 @@ const calculateTaxBreakdownSummary = (ledgers: Ledger[]) => {
       }
     }
 
-    taxGroups[taxRate].taxableAmount += taxableAmount
-    taxGroups[taxRate].totalTax += totalTax
+    // Use optional chaining and nullish coalescing to safely access properties
+    const taxGroup = taxGroups[taxRate]
+    if (taxGroup) {
+      taxGroup.taxableAmount += taxableAmount
+      taxGroup.totalTax += totalTax
 
-    // Assuming GST where tax is split equally between CGST and SGST for same state
-    if (taxRate > 0) {
-      taxGroups[taxRate].cgst += totalTax / 2
-      taxGroups[taxRate].sgst += totalTax / 2
+      // Assuming GST where tax is split equally between CGST and SGST for same state
+      if (taxRate > 0) {
+        taxGroup.cgst += totalTax / 2
+        taxGroup.sgst += totalTax / 2
+      }
     }
   })
 
