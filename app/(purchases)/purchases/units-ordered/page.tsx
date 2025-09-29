@@ -13,12 +13,12 @@ import { useRouter } from "next/navigation"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import {
   fetchUnitsOrderedWithCurrentFilters,
-  setFilters,
   selectOrders,
   selectUnitsOrderedError,
   selectUnitsOrderedFilters,
   selectUnitsOrderedLoading,
   selectUnitsOrderedSummary,
+  setFilters,
   setUnitType,
 } from "app/api/store/unitsOrderedSlice"
 import DashboardNav from "components/Navbar/DashboardNav"

@@ -6,13 +6,13 @@ import { useRouter, useSearchParams } from "next/navigation"
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import { fetchAllSuppliers, selectSuppliers } from "app/api/store/supplierSlice"
-import { fetchAllProducts, fetchAllCategories, selectCategories, selectProducts } from "app/api/store/productSlice"
+import { fetchAllCategories, fetchAllProducts, selectCategories, selectProducts } from "app/api/store/productSlice"
 import {
   createPurchaseOrder,
   fetchLowStockItems,
   resetOrderStatus,
-  selectCreatingOrder,
   selectCreateOrderError,
+  selectCreatingOrder,
   selectLowStockItems,
   selectOrderSuccess,
 } from "app/api/store/reorderSuggestionSlice"

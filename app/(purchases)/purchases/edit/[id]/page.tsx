@@ -6,14 +6,14 @@ import { useParams, useRouter } from "next/navigation"
 import React, { useEffect, useState } from "react"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import { fetchAllSuppliers, selectSuppliers } from "app/api/store/supplierSlice"
-import { fetchAllProducts, fetchAllCategories, selectCategories, selectProducts } from "app/api/store/productSlice"
+import { fetchAllCategories, fetchAllProducts, selectCategories, selectProducts } from "app/api/store/productSlice"
 import {
   fetchPurchaseOrderById,
   selectCurrentPurchaseOrder,
   selectCurrentPurchaseOrderError,
   selectCurrentPurchaseOrderLoading,
-  selectUpdatingPurchaseOrder,
   selectUpdatePurchaseOrderError,
+  selectUpdatingPurchaseOrder,
   updatePurchaseOrder,
 } from "app/api/store/purchaseSlice"
 import { FormInputModule } from "components/ui/Input/Input"
