@@ -3,7 +3,7 @@ import DashboardNav from "components/Navbar/DashboardNav"
 import { ButtonModule } from "components/ui/Button/Button"
 import { SearchModule } from "components/ui/Search/search-module"
 import { useRouter, useSearchParams } from "next/navigation"
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import { fetchAllSuppliers, selectSuppliers } from "app/api/store/supplierSlice"
 import { fetchAllCategories, fetchAllProducts, selectCategories, selectProducts } from "app/api/store/productSlice"
@@ -750,7 +750,7 @@ const ReorderCreation = () => {
                 <div className="w-full p-4">
                   {/* Skeleton for back button and title */}
                   <div className="mb-6 flex items-center gap-3">
-                    <div className="h-9 w-9 animate-pulse rounded-md bg-gray-300"></div>
+                    <div className="size-9 animate-pulse rounded-md bg-gray-300"></div>
                     <div className="h-8 w-48 animate-pulse rounded bg-gray-300"></div>
                   </div>
 
@@ -769,7 +769,7 @@ const ReorderCreation = () => {
                         {[1, 2, 3, 4].map((item) => (
                           <div key={item} className="border-b p-3">
                             <div className="mb-2 h-5 w-32 animate-pulse rounded bg-gray-300"></div>
-                            <div className="mb-1 h-4 w-40 animate-pulse rounded bg-gray-300"></div>
+                            <div className="mb-1 size-40 animate-pulse rounded bg-gray-300"></div>
                             <div className="h-4 w-36 animate-pulse rounded bg-gray-300"></div>
                           </div>
                         ))}
@@ -800,7 +800,7 @@ const ReorderCreation = () => {
                         <div key={item} className="relative mb-4 rounded-lg bg-white p-4 shadow">
                           <div className="mb-4 flex items-center justify-between">
                             <div className="h-6 w-56 animate-pulse rounded bg-gray-300"></div>
-                            <div className="h-6 w-6 animate-pulse rounded bg-gray-300"></div>
+                            <div className="size-6 animate-pulse rounded bg-gray-300"></div>
                           </div>
 
                           {/* Calculation Preview Skeleton */}
@@ -876,7 +876,7 @@ const ReorderCreation = () => {
                   <motion.button
                     type="button"
                     onClick={() => router.back()}
-                    className="flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                    className="flex size-9 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.2 }}
@@ -1206,7 +1206,7 @@ const ReorderCreation = () => {
                                   {isExpanded ? (
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
-                                      className="h-4 w-4"
+                                      className="size-4"
                                       viewBox="0 0 20 20"
                                       fill="currentColor"
                                     >
@@ -1219,7 +1219,7 @@ const ReorderCreation = () => {
                                   ) : (
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
-                                      className="h-4 w-4"
+                                      className="size-4"
                                       viewBox="0 0 20 20"
                                       fill="currentColor"
                                     >
@@ -1278,7 +1278,7 @@ const ReorderCreation = () => {
                                 >
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
-                                    className="h-5 w-5"
+                                    className="size-5"
                                     viewBox="0 0 20 20"
                                     fill="currentColor"
                                   >
@@ -1704,4 +1704,12 @@ const ReorderCreation = () => {
   )
 }
 
-export default ReorderCreation
+const ReorderCreationPage = () => {
+  return (
+    <Suspense fallback={<div className="p-4">Loading...</div>}>
+      <ReorderCreation />
+    </Suspense>
+  )
+}
+
+export default ReorderCreationPage
