@@ -17,8 +17,8 @@ import {
   fetchProductTransactions,
   fetchStockSummary,
   fetchTransactionDetails,
-  selectProductTransactions,
   selectProducts,
+  selectProductTransactions,
   selectStockSummary,
   selectTransactionDetails,
 } from "app/api/store/productSlice"
