@@ -3,7 +3,7 @@
 import { ButtonModule } from "components/ui/Button/Button"
 import { SearchModule } from "components/ui/Search/search-module"
 import { useRouter, useSearchParams } from "next/navigation"
-import React, { useEffect, useState } from "react"
+import React, { Suspense, useEffect, useState } from "react"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import { fetchAllCustomers, selectCustomers } from "app/api/store/customerSlice"
 import { fetchAllCategories, fetchAllProducts, selectCategories, selectProducts } from "app/api/store/productSlice"
@@ -2393,4 +2393,12 @@ const RaiseSalesOrder = () => {
   )
 }
 
-export default RaiseSalesOrder
+const RaiseSalesOrderPage = () => {
+  return (
+    <Suspense fallback={null}>
+      <RaiseSalesOrder />
+    </Suspense>
+  )
+}
+
+export default RaiseSalesOrderPage
