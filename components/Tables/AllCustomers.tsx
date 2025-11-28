@@ -12,12 +12,12 @@ import EditCustomerModal from "components/ui/Modal/edit-customer-modal"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import { useRouter } from "next/navigation"
 import {
+  createWallet,
   deleteCustomer,
   fetchAllCustomers,
-  selectCustomers,
-  createWallet,
-  updateWallet,
   fetchCustomerById,
+  selectCustomers,
+  updateWallet,
 } from "app/api/store/customerSlice"
 import DeleteCustomerModal from "components/ui/Modal/delete-customer-modal"
 import CustomerDetailsModal from "components/ui/Modal/customer-details-modal"

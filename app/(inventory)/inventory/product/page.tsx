@@ -14,12 +14,12 @@ import React, { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
 import {
   fetchAllProducts,
-  fetchStockSummary,
   fetchProductTransactions,
+  fetchStockSummary,
   fetchTransactionDetails,
+  selectProductTransactions,
   selectProducts,
   selectStockSummary,
-  selectProductTransactions,
   selectTransactionDetails,
 } from "app/api/store/productSlice"
 import { AnimatePresence, motion } from "framer-motion"

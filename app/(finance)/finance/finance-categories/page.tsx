@@ -1,5 +1,5 @@
 "use client"
-import { ChangeEvent, useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import {
   createExpenseCategory,
@@ -13,8 +13,8 @@ import DashboardNav from "components/Navbar/DashboardNav"
 import { ButtonModule } from "components/ui/Button/Button"
 import { FormInputModule } from "components/ui/Input/Input"
 import { DropdownPopoverModule } from "components/ui/Input/DropdownModule"
-import { RiBuilding2Fill, RiUploadCloud2Line } from "react-icons/ri"
-import { BiBarcode, BiCategory, BiMap, BiMapPin, BiDetail } from "react-icons/bi"
+import { RiBuilding2Fill } from "react-icons/ri"
+import { BiBarcode, BiCategory, BiDetail, BiMap, BiMapPin } from "react-icons/bi"
 import { AnimatePresence, motion } from "framer-motion"
 import { notify } from "components/ui/Notification/Notification"
 import Image from "next/image"
@@ -447,14 +447,14 @@ export default function ExpenseCategoriesPage() {
 
   const getCategoryIcon = (category: ExpenseCategory) => {
     const icons = [
-      <BiCategory className="min-h-5 min-w-5 text-blue-600" />,
-      <BiDetail className="min-h-5 min-w-5 text-purple-600" />,
-      <BiMap className="min-h-5 min-w-5 text-green-600" />,
-      <BiMapPin className="min-h-5 min-w-5 text-yellow-600" />,
-      <BiBarcode className="min-h-5 min-w-5 text-red-600" />,
-      <RiBuilding2Fill className="min-h-5 min-w-5 text-indigo-600" />,
-      <BiCategory className="min-h-5 min-w-5 text-pink-600" />,
-      <BiDetail className="min-h-5 min-w-5 text-gray-600" />,
+      <BiCategory key="category-blue" className="min-h-5 min-w-5 text-blue-600" />,
+      <BiDetail key="detail-purple" className="min-h-5 min-w-5 text-purple-600" />,
+      <BiMap key="map-green" className="min-h-5 min-w-5 text-green-600" />,
+      <BiMapPin key="map-pin-yellow" className="min-h-5 min-w-5 text-yellow-600" />,
+      <BiBarcode key="barcode-red" className="min-h-5 min-w-5 text-red-600" />,
+      <RiBuilding2Fill key="building-indigo" className="min-h-5 min-w-5 text-indigo-600" />,
+      <BiCategory key="category-pink" className="min-h-5 min-w-5 text-pink-600" />,
+      <BiDetail key="detail-gray" className="min-h-5 min-w-5 text-gray-600" />,
     ]
     return icons[category.expenseTypeId % icons.length]
   }

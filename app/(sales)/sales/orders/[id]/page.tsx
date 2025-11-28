@@ -4,16 +4,16 @@ import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import {
+  clearCurrentSaleOrder,
+  clearUpiQrCode,
   fetchSaleOrderByIdAction,
+  generateUpiQrCodeAction,
   selectCurrentSaleOrder,
   selectCurrentSaleOrderError,
   selectCurrentSaleOrderLoading,
-  clearCurrentSaleOrder,
-  generateUpiQrCodeAction,
-  selectUpiQrCodeLoading,
-  selectUpiQrCodeError,
   selectUpiQrCodeBase64,
-  clearUpiQrCode,
+  selectUpiQrCodeError,
+  selectUpiQrCodeLoading,
 } from "app/api/store/salesSlice"
 import { fetchAllCustomers, selectCustomers } from "app/api/store/customerSlice"
 import DashboardNav from "components/Navbar/DashboardNav"
@@ -25,6 +25,7 @@ import {
   FiChevronDown,
   FiChevronUp,
   FiClock,
+  FiCreditCard,
   FiDollarSign,
   FiDownload,
   FiEdit,
@@ -32,17 +33,15 @@ import {
   FiInfo,
   FiPackage,
   FiPrinter,
+  FiRefreshCw,
   FiSave,
   FiShoppingBag,
   FiShoppingCart,
   FiTag,
   FiUser,
   FiX,
-  FiCreditCard,
-  FiRefreshCw,
 } from "react-icons/fi"
 import { ButtonModule } from "components/ui/Button/Button"
-import QrCode from "public/qrcode"
 
 interface Customer {
   customerProfileId: number

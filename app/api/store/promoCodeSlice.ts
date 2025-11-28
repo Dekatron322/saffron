@@ -1,5 +1,5 @@
 // src/store/promoSlice.ts
-import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit"
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { AppDispatch, RootState } from "./store"
 import axios from "axios"
 import { API_CONFIG } from "../config/api"

@@ -2,18 +2,12 @@
 "use client"
 import { useEffect, useState } from "react"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
-import {
-  fetchAllExpenseTypes,
-  createExpenseType,
-  updateExpenseType,
-  deleteExpenseType,
-  selectExpenses,
-} from "app/api/store/financeSlice"
+import { createExpenseType, deleteExpenseType, fetchAllExpenseTypes, selectExpenses } from "app/api/store/financeSlice"
 import DashboardNav from "components/Navbar/DashboardNav"
 import { ButtonModule } from "components/ui/Button/Button"
 import { FormInputModule } from "components/ui/Input/Input"
-import { RiBuilding2Fill, RiAddLine, RiEditLine } from "react-icons/ri"
-import { BiCategory, BiDetail, BiChevronDown, BiChevronUp } from "react-icons/bi"
+import { RiAddLine, RiEditLine } from "react-icons/ri"
+import { BiCategory, BiDetail } from "react-icons/bi"
 import { AnimatePresence, motion } from "framer-motion"
 import { notify } from "components/ui/Notification/Notification"
 import Image from "next/image"

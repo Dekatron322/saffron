@@ -1,25 +1,25 @@
 "use client"
-import { ChangeEvent, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import {
-  createPromoCode,
-  updatePromoCode,
-  removeCustomerFromPromo,
-  fetchAllPromos,
-  getPromoCodeByCode,
-  getPromoCodeById,
-  selectPromos,
-  selectCurrentPromoCode,
-  selectCurrentPromoLoading,
-  selectCurrentPromoError,
-  selectPromoCodeById,
-  selectPromoCodeByIdLoading,
-  selectPromoCodeByIdError,
-  selectRemoveCustomerLoading,
-  selectRemoveCustomerError,
   clearCurrentPromo,
   clearPromoCodeById,
   clearRemoveCustomerError,
+  createPromoCode,
+  fetchAllPromos,
+  getPromoCodeByCode,
+  getPromoCodeById,
+  removeCustomerFromPromo,
+  selectCurrentPromoCode,
+  selectCurrentPromoError,
+  selectCurrentPromoLoading,
+  selectPromoCodeById,
+  selectPromoCodeByIdError,
+  selectPromoCodeByIdLoading,
+  selectPromos,
+  selectRemoveCustomerError,
+  selectRemoveCustomerLoading,
+  updatePromoCode,
 } from "app/api/store/promoCodeSlice"
 import { fetchAllCustomers, selectCustomers } from "app/api/store/customerSlice"
 import DashboardNav from "components/Navbar/DashboardNav"
@@ -27,22 +27,21 @@ import { ButtonModule } from "components/ui/Button/Button"
 import { FormInputModule } from "components/ui/Input/Input"
 import { DropdownPopoverModule } from "components/ui/Input/DropdownModule"
 import {
-  RiCoupon3Fill,
+  RiArrowDownSLine,
   RiCalendarLine,
-  RiUserLine,
+  RiCheckLine,
+  RiCloseLine,
+  RiCoupon3Fill,
+  RiEditLine,
+  RiHashtag,
   RiPercentLine,
   RiSearchLine,
-  RiHashtag,
-  RiEditLine,
-  RiCloseLine,
+  RiUserLine,
   RiUserUnfollowLine,
-  RiCheckLine,
-  RiArrowDownSLine,
 } from "react-icons/ri"
-import { BiBarcode, BiCategory, BiDetail, BiRefresh } from "react-icons/bi"
+import { BiRefresh } from "react-icons/bi"
 import { AnimatePresence, motion } from "framer-motion"
 import { notify } from "components/ui/Notification/Notification"
-import Image from "next/image"
 import { RxCross2 } from "react-icons/rx"
 
 interface PromoCode {
@@ -529,7 +528,9 @@ const CustomerRemovalSelection: React.FC<CustomerRemovalSelectionProps> = ({
           This promo code is not available to any customers. No customers to remove.
         </p>
       ) : (
-        <p className="mt-1 text-xs text-gray-500">Select customers to remove from this promo code's eligibility list</p>
+        <p className="mt-1 text-xs text-gray-500">
+          Select customers to remove from this promo code&apos;s eligibility list
+        </p>
       )}
     </div>
   )
@@ -1427,10 +1428,10 @@ export default function PromoCodesPage() {
 
   const getPromoIcon = (promo: PromoCode) => {
     const icons = [
-      <RiCoupon3Fill className="min-h-5 min-w-5 text-blue-600" />,
-      <RiPercentLine className="min-h-5 min-w-5 text-green-600" />,
-      <RiCalendarLine className="min-h-5 min-w-5 text-purple-600" />,
-      <RiUserLine className="min-h-5 min-w-5 text-orange-600" />,
+      <RiCoupon3Fill key="coupon" className="min-h-5 min-w-5 text-blue-600" />,
+      <RiPercentLine key="percent" className="min-h-5 min-w-5 text-green-600" />,
+      <RiCalendarLine key="calendar" className="min-h-5 min-w-5 text-purple-600" />,
+      <RiUserLine key="user" className="min-h-5 min-w-5 text-orange-600" />,
     ]
     return icons[promo.promoCodeId % icons.length]
   }
@@ -1774,7 +1775,7 @@ export default function PromoCodesPage() {
               </svg>
             </div>
             <h3 className="mb-2 text-lg font-medium text-gray-900">Promo code not found</h3>
-            <p className="mb-4 text-gray-500">No promo code found with code "{searchByCodeTerm}".</p>
+            <p className="mb-4 text-gray-500">No promo code found with code &quot;{searchByCodeTerm}&quot;.</p>
             <div className="flex gap-2">
               <ButtonModule variant="outline" size="sm" onClick={handleClearSearchByCode}>
                 Clear search
@@ -1799,7 +1800,7 @@ export default function PromoCodesPage() {
               </svg>
             </div>
             <h3 className="mb-2 text-lg font-medium text-gray-900">Promo code not found</h3>
-            <p className="mb-4 text-gray-500">No promo code found with ID "{searchByIdTerm}".</p>
+            <p className="mb-4 text-gray-500">No promo code found with ID &quot;{searchByIdTerm}&quot;.</p>
             <div className="flex gap-2">
               <ButtonModule variant="outline" size="sm" onClick={handleClearSearchById}>
                 Clear search
