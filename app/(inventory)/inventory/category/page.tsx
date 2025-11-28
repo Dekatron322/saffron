@@ -58,7 +58,7 @@ const SkeletonLoader = () => {
         <div className="w-1/4 rounded-md bg-white p-4">
           <div className="flex h-10 items-center gap-2">
             <div className="h-10 w-full animate-pulse rounded bg-gray-200"></div>
-            <div className="h-10 w-10 animate-pulse rounded bg-gray-200"></div>
+            <div className="size-10 animate-pulse rounded bg-gray-200"></div>
           </div>
           <div className="mt-3 space-y-2">
             {[...Array(8)].map((_, i) => (
@@ -121,6 +121,7 @@ const InventoryCategory = () => {
   const dropdownRefs = useRef<(HTMLDivElement | null)[]>([])
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null)
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Animation variants
   const containerVariants = {
@@ -185,6 +186,10 @@ const InventoryCategory = () => {
     }
   }, [selectedCategory, products])
 
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filteredProducts])
+
   const handleCancelSearch = () => {
     setSearchText("")
     setFilteredCategories(categories)
@@ -212,6 +217,12 @@ const InventoryCategory = () => {
     if (product.currentStockLevel === null) return 0
     return product.currentStockLevel * product.salePrice
   }
+
+  const pageSize = 10
+  const totalItems = filteredProducts.length
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
+  const startIndex = (currentPage - 1) * pageSize
+  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + pageSize)
 
   const handleAddProduct = () => {
     router.push(`product/add-product`)
@@ -470,7 +481,7 @@ const InventoryCategory = () => {
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-gray-200 bg-white">
-                                {filteredProducts.map((product: Product, index: number) => (
+                                {paginatedProducts.map((product: Product, index: number) => (
                                   <motion.tr
                                     key={product.productId}
                                     initial={{ opacity: 0, y: 10 }}
@@ -478,7 +489,7 @@ const InventoryCategory = () => {
                                     transition={{ delay: index * 0.05 }}
                                     whileHover={{ backgroundColor: "rgba(0, 0, 0, 0.02)" }}
                                   >
-                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{index + 1}</td>
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{startIndex + index + 1}</td>
                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                       {product.productName}
                                     </td>
@@ -527,6 +538,29 @@ const InventoryCategory = () => {
                                 ))}
                               </tbody>
                             </table>
+                            <div className="mt-4 flex items-center justify-between">
+                              <p className="text-sm text-gray-600">
+                                Page {currentPage} of {totalPages} • Showing {paginatedProducts.length} of {totalItems}
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <ButtonModule
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                  disabled={currentPage === 1}
+                                >
+                                  Prev
+                                </ButtonModule>
+                                <ButtonModule
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                  disabled={currentPage === totalPages}
+                                >
+                                  Next
+                                </ButtonModule>
+                              </div>
+                            </div>
                           </div>
                         ) : (
                           <motion.div

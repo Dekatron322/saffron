@@ -1,4 +1,5 @@
 "use client"
+
 import DashboardNav from "components/Navbar/DashboardNav"
 import { ButtonModule } from "components/ui/Button/Button"
 import { SearchModule } from "components/ui/Search/search-module"
@@ -73,14 +74,10 @@ interface ProductFormData {
   deductibleWalletAmount: number
 }
 
-interface PurchaseOrderItem {
-  productForm: ProductFormData
-  quantity?: number
-  subtotal?: number
-  taxAmount?: number
-  total?: number
-  discountAmount?: number
-  isMinimized?: boolean
+interface DiscountDto {
+  discountType: string
+  discountValue: number
+  discountedAmount: number
 }
 
 interface PaymentInfo {
@@ -90,6 +87,16 @@ interface PaymentInfo {
   paidAmount: string
   linkPayment: boolean
   deductibleWalletAmount: number
+}
+
+interface PurchaseOrderItem {
+  productForm: ProductFormData
+  quantity?: number
+  subtotal?: number
+  taxAmount?: number
+  total?: number
+  discountAmount?: number
+  isMinimized?: boolean
 }
 
 interface CalculationBreakdown {
@@ -141,6 +148,12 @@ const EditPurchaseOrder = () => {
     deductibleWalletAmount: 0,
   })
 
+  const [discountDto, setDiscountDto] = useState<DiscountDto>({
+    discountType: "Percentage",
+    discountValue: 0,
+    discountedAmount: 0,
+  })
+
   const [calculationBreakdown, setCalculationBreakdown] = useState<CalculationBreakdown>({
     subtotal: 0,
     taxAmount: 0,
@@ -174,15 +187,43 @@ const EditPurchaseOrder = () => {
         setSelectedSupplier(supplier)
       }
 
+      // Calculate total amount with tax from purchase order items if not provided
+      const calculatedTotalWithTax =
+        currentPurchaseOrder.totalAmountWithTax ||
+        calculateTotalWithTaxFromItems(currentPurchaseOrder.purchaseOrderItems)
+
       // Set payment info
       setPaymentInfo({
         paymentType: currentPurchaseOrder.paymentCategory || "CASH",
         totalAmount: currentPurchaseOrder.totalAmount.toString(),
-        totalAmountWithTax: currentPurchaseOrder.totalAmount.toString(),
+        totalAmountWithTax: calculatedTotalWithTax.toString(),
         paidAmount: currentPurchaseOrder.paidAmount?.toString() || "0",
-        linkPayment: currentPurchaseOrder.linkPayment,
+        linkPayment: currentPurchaseOrder.linkPayment || false,
         deductibleWalletAmount: currentPurchaseOrder.deductibleWalletAmount || 0,
       })
+
+      // Set discount DTO if available, otherwise calculate from discount
+      if (currentPurchaseOrder.discountDto) {
+        setDiscountDto(currentPurchaseOrder.discountDto)
+      } else if (currentPurchaseOrder.discount && currentPurchaseOrder.discount > 0) {
+        // Calculate discount DTO from discount percentage
+        const discountValue = currentPurchaseOrder.discount
+        const subtotal = currentPurchaseOrder.totalAmount
+        const discountedAmount = (subtotal * discountValue) / 100
+
+        setDiscountDto({
+          discountType: "Percentage",
+          discountValue: discountValue,
+          discountedAmount: discountedAmount,
+        })
+      } else {
+        // Initialize with default values
+        setDiscountDto({
+          discountType: "Percentage",
+          discountValue: 0,
+          discountedAmount: 0,
+        })
+      }
 
       // Transform purchase order items to form data
       const transformedOrders: PurchaseOrderItem[] = currentPurchaseOrder.purchaseOrderItems.map((item, index) => {
@@ -235,7 +276,7 @@ const EditPurchaseOrder = () => {
             paymentCategory: currentPurchaseOrder.paymentCategory || "cash",
             type: currentPurchaseOrder.type || "STOCK",
             paidAmount: currentPurchaseOrder.paidAmount?.toString() || "0",
-            linkPayment: currentPurchaseOrder.linkPayment,
+            linkPayment: currentPurchaseOrder.linkPayment || false,
             deductibleWalletAmount: currentPurchaseOrder.deductibleWalletAmount || 0,
             batchNo: item.itemDetails?.batchNo || "",
           },
@@ -247,42 +288,26 @@ const EditPurchaseOrder = () => {
       setPurchaseOrders(transformedOrders)
       setExpandedOrderIndex(0)
     }
-  }, [currentPurchaseOrder, suppliers, categories]) // Added categories to dependencies
+  }, [currentPurchaseOrder, suppliers, categories])
 
-  useEffect(() => {
-    calculateTotals()
-  }, [purchaseOrders])
+  // Helper function to calculate total with tax from purchase order items
+  const calculateTotalWithTaxFromItems = (items: any[]) => {
+    let totalWithTax = 0
 
-  const handleMfgDateChange = (date: Date | null, index: number) => {
-    const updatedOrders = [...purchaseOrders]
-    const currentOrder = updatedOrders[index]
-    if (!currentOrder) return
+    items.forEach((item) => {
+      const quantity = item.quantity || 1
+      const unitPrice = item.unitPrice || 0
+      const taxRate = item.itemDetails?.taxRate || 0
 
-    updatedOrders[index] = {
-      ...currentOrder,
-      productForm: {
-        ...currentOrder.productForm,
-        mfgDate: date ? date.toISOString().split("T")[0] ?? "" : "",
-      },
-    }
-    setPurchaseOrders(updatedOrders)
+      const subtotal = unitPrice * quantity
+      const taxAmount = subtotal * (taxRate / 100)
+      totalWithTax += subtotal + taxAmount
+    })
+
+    return totalWithTax
   }
 
-  const handleExpDateChange = (date: Date | null, index: number) => {
-    const updatedOrders = [...purchaseOrders]
-    const currentOrder = updatedOrders[index]
-    if (!currentOrder) return
-
-    updatedOrders[index] = {
-      ...currentOrder,
-      productForm: {
-        ...currentOrder.productForm,
-        expDate: date ? date.toISOString().split("T")[0] ?? "" : "",
-      },
-    }
-    setPurchaseOrders(updatedOrders)
-  }
-
+  // Fixed calculation logic - order discount should be calculated from final amount with tax
   const calculateTotals = () => {
     let subtotal = 0
     let taxAmount = 0
@@ -334,19 +359,82 @@ const EditPurchaseOrder = () => {
       })
     })
 
+    // Calculate order-level discount (this should be calculated from the final amount with tax)
+    let orderDiscount = 0
+    if (discountDto.discountValue > 0) {
+      if (discountDto.discountType === "Percentage") {
+        // Apply order discount to the final amount with tax
+        orderDiscount = totalWithTax * (discountDto.discountValue / 100)
+      } else {
+        orderDiscount = discountDto.discountValue
+      }
+    }
+
+    // Calculate final amount after ALL discounts
+    const finalTotalWithTax = Math.max(0, totalWithTax - orderDiscount)
+
     setCalculationBreakdown({
       subtotal,
       taxAmount,
-      totalWithTax,
-      discountAmount: totalDiscountAmount,
+      totalWithTax: finalTotalWithTax, // Final amount after ALL discounts and tax
+      discountAmount: totalDiscountAmount + orderDiscount, // Total of all discounts (item + order)
       itemBreakdown,
     })
 
     setPaymentInfo((prev) => ({
       ...prev,
       totalAmount: subtotal.toFixed(2),
-      totalAmountWithTax: totalWithTax.toFixed(2),
-      paidAmount: totalWithTax.toFixed(2),
+      totalAmountWithTax: finalTotalWithTax.toFixed(2),
+      paidAmount: finalTotalWithTax.toFixed(2),
+    }))
+
+    // Update discount DTO with the calculated order discount amount
+    if (discountDto.discountValue > 0) {
+      setDiscountDto((prev) => ({
+        ...prev,
+        discountedAmount: orderDiscount,
+      }))
+    }
+  }
+
+  useEffect(() => {
+    calculateTotals()
+  }, [purchaseOrders, discountDto])
+
+  const handleMfgDateChange = (date: Date | null, index: number) => {
+    const updatedOrders = [...purchaseOrders]
+    const currentOrder = updatedOrders[index]
+    if (!currentOrder) return
+
+    updatedOrders[index] = {
+      ...currentOrder,
+      productForm: {
+        ...currentOrder.productForm,
+        mfgDate: date ? date.toISOString().split("T")[0] ?? "" : "",
+      },
+    }
+    setPurchaseOrders(updatedOrders)
+  }
+
+  const handleExpDateChange = (date: Date | null, index: number) => {
+    const updatedOrders = [...purchaseOrders]
+    const currentOrder = updatedOrders[index]
+    if (!currentOrder) return
+
+    updatedOrders[index] = {
+      ...currentOrder,
+      productForm: {
+        ...currentOrder.productForm,
+        expDate: date ? date.toISOString().split("T")[0] ?? "" : "",
+      },
+    }
+    setPurchaseOrders(updatedOrders)
+  }
+
+  const handleDiscountDtoChange = (field: keyof DiscountDto, value: string | number) => {
+    setDiscountDto((prev) => ({
+      ...prev,
+      [field]: value,
     }))
   }
 
@@ -618,6 +706,8 @@ const EditPurchaseOrder = () => {
             openingStockQuantity: order.quantity || 1,
           })),
         },
+        totalAmountWithTax: parseFloat(paymentInfo.totalAmountWithTax),
+        discountDto: discountDto.discountValue > 0 ? discountDto : null,
       }
 
       const result = await dispatch(updatePurchaseOrder(requestData)).unwrap()
@@ -666,6 +756,7 @@ const EditPurchaseOrder = () => {
       }
     }
   }, [searchText, suppliers])
+
   // Animation variants for framer motion
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -719,7 +810,7 @@ const EditPurchaseOrder = () => {
                 <div className="w-full p-4">
                   {/* Skeleton for back button and title */}
                   <div className="mb-6 flex items-center gap-3">
-                    <div className="h-9 w-9 animate-pulse rounded-md bg-gray-300"></div>
+                    <div className="size-9 animate-pulse rounded-md bg-gray-300"></div>
                     <div className="h-8 w-48 animate-pulse rounded bg-gray-300"></div>
                   </div>
 
@@ -738,7 +829,7 @@ const EditPurchaseOrder = () => {
                         {[1, 2, 3, 4].map((item) => (
                           <div key={item} className="border-b p-3">
                             <div className="mb-2 h-5 w-32 animate-pulse rounded bg-gray-300"></div>
-                            <div className="mb-1 h-4 w-40 animate-pulse rounded bg-gray-300"></div>
+                            <div className="mb-1 size-40 animate-pulse rounded bg-gray-300"></div>
                             <div className="h-4 w-36 animate-pulse rounded bg-gray-300"></div>
                           </div>
                         ))}
@@ -769,7 +860,7 @@ const EditPurchaseOrder = () => {
                         <div key={item} className="relative mb-4 rounded-lg bg-white p-4 shadow">
                           <div className="mb-4 flex items-center justify-between">
                             <div className="h-6 w-56 animate-pulse rounded bg-gray-300"></div>
-                            <div className="h-6 w-6 animate-pulse rounded bg-gray-300"></div>
+                            <div className="size-6 animate-pulse rounded bg-gray-300"></div>
                           </div>
 
                           {/* Calculation Preview Skeleton */}
@@ -831,6 +922,7 @@ const EditPurchaseOrder = () => {
       </div>
     )
   }
+
   if (categoriesLoading) {
     return (
       <div className="h-auto w-full bg-[#F4F9F8]">
@@ -886,7 +978,7 @@ const EditPurchaseOrder = () => {
                   <motion.button
                     type="button"
                     onClick={() => router.back()}
-                    className="flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                    className="flex size-9 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.2 }}
@@ -1022,10 +1114,12 @@ const EditPurchaseOrder = () => {
                           />
 
                           <FormInputModule
-                            label="Discount"
+                            label="Item Discounts"
                             type="text"
                             placeholder=""
-                            value={`-₹${calculationBreakdown.discountAmount.toFixed(2)}`}
+                            value={`-₹${(calculationBreakdown.discountAmount - discountDto.discountedAmount).toFixed(
+                              2
+                            )}`}
                             onChange={() => {}}
                             className="w-full"
                           />
@@ -1040,7 +1134,59 @@ const EditPurchaseOrder = () => {
                           />
 
                           <FormInputModule
-                            label="Total Amount with Tax"
+                            label="Amount Before Order Discount"
+                            type="text"
+                            placeholder=""
+                            value={`₹${(
+                              calculationBreakdown.subtotal -
+                              (calculationBreakdown.discountAmount - discountDto.discountedAmount) +
+                              calculationBreakdown.taxAmount
+                            ).toFixed(2)}`}
+                            onChange={() => {}}
+                            className="w-full"
+                          />
+
+                          {/* Order-level Discount Section */}
+                          <div className="border-t pt-3">
+                            <h3 className="text-md mb-3 font-semibold">Order Discount</h3>
+
+                            <div className="mb-3">
+                              <label className="mb-1 block text-sm font-medium">Discount Type</label>
+                              <DropdownPopoverModule
+                                label=""
+                                options={[
+                                  { value: "Percentage", label: "Percentage" },
+                                  { value: "Amount", label: "Amount" },
+                                ]}
+                                placeholder="Select Discount Type"
+                                value={discountDto.discountType}
+                                onChange={(value) => handleDiscountDtoChange("discountType", value)}
+                              />
+                            </div>
+
+                            <FormInputModule
+                              label="Discount Value"
+                              type="number"
+                              placeholder="Enter discount value"
+                              value={discountDto.discountValue.toString()}
+                              onChange={(e) =>
+                                handleDiscountDtoChange("discountValue", parseFloat(e.target.value) || 0)
+                              }
+                              className="w-full"
+                            />
+
+                            <FormInputModule
+                              label="Order Discount Amount"
+                              type="number"
+                              placeholder=""
+                              value={`-₹${discountDto.discountedAmount.toFixed(2)}`}
+                              onChange={() => {}}
+                              className="w-full"
+                            />
+                          </div>
+
+                          <FormInputModule
+                            label="Final Amount"
                             type="text"
                             placeholder=""
                             value={`₹${paymentInfo.totalAmountWithTax}`}
@@ -1125,15 +1271,32 @@ const EditPurchaseOrder = () => {
                                   <span>₹{calculationBreakdown.subtotal.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-red-600">
-                                  <span>Discount:</span>
-                                  <span>-₹{calculationBreakdown.discountAmount.toFixed(2)}</span>
+                                  <span>Item Discounts:</span>
+                                  <span>
+                                    -₹{(calculationBreakdown.discountAmount - discountDto.discountedAmount).toFixed(2)}
+                                  </span>
                                 </div>
                                 <div className="flex justify-between">
                                   <span>Tax:</span>
                                   <span>₹{calculationBreakdown.taxAmount.toFixed(2)}</span>
                                 </div>
+                                <div className="flex justify-between">
+                                  <span>Amount Before Order Discount:</span>
+                                  <span>
+                                    ₹
+                                    {(
+                                      calculationBreakdown.subtotal -
+                                      (calculationBreakdown.discountAmount - discountDto.discountedAmount) +
+                                      calculationBreakdown.taxAmount
+                                    ).toFixed(2)}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-red-600">
+                                  <span>Order Discount:</span>
+                                  <span>-₹{discountDto.discountedAmount.toFixed(2)}</span>
+                                </div>
                                 <div className="flex justify-between font-semibold">
-                                  <span>Total:</span>
+                                  <span>Final Amount:</span>
                                   <span>₹{calculationBreakdown.totalWithTax.toFixed(2)}</span>
                                 </div>
                               </div>
@@ -1164,9 +1327,10 @@ const EditPurchaseOrder = () => {
                           <p className="text-sm text-gray-600">
                             Total:{" "}
                             <span className="font-semibold">₹{calculationBreakdown.totalWithTax.toFixed(2)}</span>{" "}
-                            (Subtotal: ₹{calculationBreakdown.subtotal.toFixed(2)} - Discount: ₹
-                            {calculationBreakdown.discountAmount.toFixed(2)} + Tax: ₹
-                            {calculationBreakdown.taxAmount.toFixed(2)})
+                            (Subtotal: ₹{calculationBreakdown.subtotal.toFixed(2)} - Item Discounts: ₹
+                            {(calculationBreakdown.discountAmount - discountDto.discountedAmount).toFixed(2)} + Tax: ₹
+                            {calculationBreakdown.taxAmount.toFixed(2)} - Order Discount: ₹
+                            {discountDto.discountedAmount.toFixed(2)})
                           </p>
                         </div>
                       ) : (
@@ -1223,7 +1387,7 @@ const EditPurchaseOrder = () => {
                                   {order.isMinimized ? (
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
-                                      className="h-5 w-5"
+                                      className="size-5"
                                       viewBox="0 0 20 20"
                                       fill="currentColor"
                                     >
@@ -1236,7 +1400,7 @@ const EditPurchaseOrder = () => {
                                   ) : (
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
-                                      className="h-5 w-5"
+                                      className="size-5"
                                       viewBox="0 0 20 20"
                                       fill="CurrentColor"
                                     >
@@ -1258,7 +1422,7 @@ const EditPurchaseOrder = () => {
                                   >
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
-                                      className="h-5 w-5"
+                                      className="size-5"
                                       viewBox="0 0 20 20"
                                       fill="currentColor"
                                     >
@@ -1652,11 +1816,15 @@ const EditPurchaseOrder = () => {
                           </p>
                           <p className="text-sm font-semibold">Subtotal: ₹{calculationBreakdown.subtotal.toFixed(2)}</p>
                           <p className="text-sm font-semibold text-red-600">
-                            Discount: -₹{calculationBreakdown.discountAmount.toFixed(2)}
+                            Item Discounts: -₹
+                            {(calculationBreakdown.discountAmount - discountDto.discountedAmount).toFixed(2)}
                           </p>
                           <p className="text-sm font-semibold">Tax: ₹{calculationBreakdown.taxAmount.toFixed(2)}</p>
+                          <p className="text-sm font-semibold text-red-600">
+                            Order Discount: -₹{discountDto.discountedAmount.toFixed(2)}
+                          </p>
                           <p className="text-lg font-bold text-green-700">
-                            Total: ₹{calculationBreakdown.totalWithTax.toFixed(2)}
+                            Final Amount: ₹{calculationBreakdown.totalWithTax.toFixed(2)}
                           </p>
                         </div>
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>

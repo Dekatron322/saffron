@@ -15,7 +15,6 @@ import { Chart } from "react-chartjs-2"
 import { ChartData } from "chart.js"
 import ProductSalesTable from "components/Tables/ProductSalesTable"
 
-// Register ChartJS components
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend)
 
 export default function TopSelling() {

@@ -129,16 +129,16 @@ const DebitFeesTable = () => {
     if (!logo) {
       return (
         <div className="flex items-center gap-2">
-          <img src="/DashboardImages/Package.png" alt="Default bank" className="icon-style h-5 w-5" />
-          <img src="/DashboardImages/Package-dark.png" alt="Default bank dark" className="dark-icon-style h-5 w-5" />
+          <img src="/DashboardImages/Package.png" alt="Default bank" className="icon-style size-5" />
+          <img src="/DashboardImages/Package-dark.png" alt="Default bank dark" className="dark-icon-style size-5" />
         </div>
       )
     }
 
     return (
       <div className="flex items-center gap-2">
-        <img src={logo.light} alt={logo.alt} className="icon-style h-5 w-5" />
-        {logo.dark && <img src={logo.dark} alt={logo.alt} className="dark-icon-style h-5 w-5" />}
+        <img src={logo.light} alt={logo.alt} className="icon-style size-5" />
+        {logo.dark && <img src={logo.dark} alt={logo.alt} className="dark-icon-style size-5" />}
       </div>
     )
   }

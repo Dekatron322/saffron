@@ -132,7 +132,7 @@ const EditProfileModal = ({
         <button onClick={onRequestClose} className="text-gray-500 hover:text-gray-700">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
+            className="size-6"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -210,7 +210,7 @@ const EditProfileModal = ({
               {loading ? (
                 <div className="flex items-center justify-center">
                   <svg
-                    className="mr-2 h-5 w-5 animate-spin"
+                    className="mr-2 size-5 animate-spin"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -313,7 +313,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <section className="h-full w-full bg-gray-50">
+    <section className="size-full bg-gray-50">
       <div className="flex min-h-screen w-full">
         <div className="flex w-full flex-col">
           <DashboardNav />
@@ -339,7 +339,7 @@ export default function ProfilePage() {
                     <div className="flex-1">
                       <div className="mb-8 flex flex-col items-center md:flex-row md:items-start">
                         <div className="relative mb-4 md:mb-0 md:mr-6">
-                          <div className="h-24 w-24 animate-pulse rounded-full bg-gray-200"></div>
+                          <div className="size-24 animate-pulse rounded-full bg-gray-200"></div>
                         </div>
                         <div className="space-y-2 text-center md:text-left">
                           <div className="h-8 w-48 animate-pulse rounded bg-gray-200"></div>
@@ -415,20 +415,20 @@ export default function ProfilePage() {
                   <motion.div className="flex-1" variants={itemVariants}>
                     <div className="mb-8 flex flex-col items-center md:flex-row md:items-start">
                       <div className="relative mb-4 md:mb-0 md:mr-6">
-                        <div className="h-24 w-24 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 p-1">
+                        <div className="size-24 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 p-1">
                           {userDetails.firstName && userDetails.lastName ? (
-                            <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-3xl font-bold text-blue-600">
+                            <div className="flex size-full items-center justify-center rounded-full bg-white text-3xl font-bold text-blue-600">
                               {userDetails.firstName.charAt(0)}
                               {userDetails.lastName.charAt(0)}
                             </div>
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-3xl font-bold text-blue-600">
+                            <div className="flex size-full items-center justify-center rounded-full bg-white text-3xl font-bold text-blue-600">
                               ?
                             </div>
                           )}
                         </div>
                         <div className="absolute -bottom-2 -right-2 rounded-full bg-green-500 p-1">
-                          <div className="h-5 w-5 rounded-full bg-white"></div>
+                          <div className="size-5 rounded-full bg-white"></div>
                         </div>
                       </div>
                       <div className="text-center md:text-left">
@@ -548,7 +548,7 @@ export default function ProfilePage() {
                     ) : (
                       <div className="flex h-64 items-center justify-center rounded-xl bg-gray-50">
                         <div className="text-center">
-                          <div className="mx-auto h-12 w-12 text-gray-400">
+                          <div className="mx-auto size-12 text-gray-400">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
@@ -578,7 +578,7 @@ export default function ProfilePage() {
                   >
                     Edit Profile
                     <svg
-                      className="ml-2 h-4 w-4"
+                      className="ml-2 size-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

@@ -61,13 +61,13 @@ const CustomerMenu = () => {
       animate="visible"
     >
       <div className="flex items-center gap-2 max-sm:mb-2">
-        <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200"></div>
+        <div className="size-8 animate-pulse rounded-full bg-gray-200"></div>
         <div className="w-full">
           <div className="mb-2 h-4 w-3/4 animate-pulse rounded bg-gray-200"></div>
           <div className="flex w-full justify-between">
             <div className="h-6 w-1/3 animate-pulse rounded bg-gray-200"></div>
             <div className="flex items-center gap-1">
-              <div className="h-4 w-4 animate-pulse rounded bg-gray-200"></div>
+              <div className="size-4 animate-pulse rounded bg-gray-200"></div>
               <div className="h-4 w-8 animate-pulse rounded bg-gray-200"></div>
             </div>
           </div>

@@ -40,11 +40,22 @@ const links = [
     sublinks: [
       { name: "Transactions", href: "/sales/transactions" },
       { name: "Order", href: "/sales/orders" },
+      { name: "Promo Code", href: "/sales/promo-code" },
     ],
   },
   { name: "Purchases", href: "/purchases", icon: PurchaseIcon },
   { name: "Customers", href: "/customers", icon: CustomerIcon },
-  { name: "Finance", href: "/Finance", icon: FinanceIcon },
+  {
+    name: "Finance",
+    href: "",
+    icon: FinanceIcon,
+    sublinks: [
+      { name: "Expenses", href: "/finance/expenses" },
+      { name: "Expense Types", href: "/finance/expense-type" },
+      { name: "Expense Categories", href: "/finance/finance-categories" },
+    ],
+  },
+
   { name: "Reports and Analysis", href: "/reports", icon: BusinessLogo },
   { name: "Grow Your Business", href: "/grow-your-business", icon: GrowIcon },
   { name: "User Management", href: "/user-management", icon: AdminIcon },

@@ -486,7 +486,7 @@ const PurchaseOverview = () => {
   }, [searchText])
 
   const handleAddInvoice = () => {
-    router.push(`order-creation`)
+    router.push(`/purchases?tab=2`)
   }
 
   const handlePageChange = (pageNumber: number) => {
@@ -640,7 +640,7 @@ const PurchaseOverview = () => {
                   <motion.button
                     type="button"
                     onClick={() => router.back()}
-                    className="flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                    className="flex size-9 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.2 }}

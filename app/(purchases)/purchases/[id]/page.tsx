@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { useParams } from "next/navigation"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import {
+  calculateOrderTotals,
   clearCurrentPurchaseOrder,
   fetchPurchaseOrderById,
   fetchPurchaseReturnReasons,
@@ -16,8 +17,10 @@ import {
   selectUpdatingPaymentStatus,
   updatePaymentStatus,
 } from "app/api/store/purchaseSlice"
+import { fetchAllSuppliers, selectSuppliers } from "app/api/store/supplierSlice"
 import DashboardNav from "components/Navbar/DashboardNav"
 import { NotificationProvider, notify } from "components/ui/Notification/Notification"
+
 import {
   FiArrowLeft,
   FiAward,
@@ -47,6 +50,8 @@ interface ItemEditState {
   purchaseOrderItemId: number
   statusOfItem: string
   defectQuantity: number
+  discountType: string
+  discountValue: number
 }
 
 const PurchaseOrderDetails = () => {
@@ -59,6 +64,7 @@ const PurchaseOrderDetails = () => {
   const updatePaymentStatusError = useAppSelector(selectUpdatePaymentStatusError)
   const returnReasons = useAppSelector(selectPurchaseReturnReasons)
   const returnReasonsLoading = useAppSelector(selectPurchaseReturnReasonsLoading)
+  const { suppliers } = useAppSelector(selectSuppliers)
 
   // Memoize derived values
   const isOrderApproved = useMemo(() => purchaseOrder?.orderStatus === "APPROVED", [purchaseOrder?.orderStatus])
@@ -84,6 +90,7 @@ const PurchaseOrderDetails = () => {
     if (id) {
       dispatch(fetchPurchaseOrderById(id))
       dispatch(fetchPurchaseReturnReasons())
+      dispatch(fetchAllSuppliers())
     }
 
     return () => {
@@ -102,7 +109,7 @@ const PurchaseOrderDetails = () => {
         deductibleWalletAmount: purchaseOrder.deductibleWalletAmount || 0,
         orderStatus: purchaseOrder.orderStatus || "",
         discount: purchaseOrder.discount || 0,
-        discountType: "AMOUNT", // Default to amount, can be enhanced to detect type
+        discountType: purchaseOrder.discountDto?.discountType === "Percentage" ? "PERCENTAGE" : "AMOUNT",
       })
 
       // Initialize editing items with current values
@@ -111,10 +118,112 @@ const PurchaseOrderDetails = () => {
           purchaseOrderItemId: item.purchaseOrderItemId,
           statusOfItem: item.statusOfItem || "ACTIVE",
           defectQuantity: item.defectQuantity || 0,
+          discountType: item.discountType || item.itemDetails?.discountType || "Percentage",
+          discountValue: item.discountValue || item.itemDetails?.saleDiscount || 0,
         }))
       )
     }
   }, [purchaseOrder])
+
+  // Fixed calculation logic - order discount should be calculated from final amount with tax
+  const calculateOrderTotals = useCallback((): {
+    subtotal: number
+    totalItemDiscount: number
+    orderDiscount: number
+    totalDiscount: number
+    totalTax: number
+    totalAmount: number
+    totalAmountWithTax: number
+    totalAmountWithTaxBeforeOrderDiscount: number
+    orderDiscountedAmount: number
+    netAmountBeforeTax: number
+  } => {
+    if (!purchaseOrder)
+      return {
+        subtotal: 0,
+        totalItemDiscount: 0,
+        orderDiscount: 0,
+        totalDiscount: 0,
+        totalTax: 0,
+        totalAmount: 0,
+        totalAmountWithTax: 0,
+        totalAmountWithTaxBeforeOrderDiscount: 0,
+        orderDiscountedAmount: 0,
+        netAmountBeforeTax: 0,
+      }
+
+    let subtotal = 0
+    let totalItemDiscount = 0
+    let totalTax = 0
+
+    // Calculate item-level totals
+    purchaseOrder.purchaseOrderItems.forEach((item) => {
+      const editedItem = editingItems.find((editItem) => editItem.purchaseOrderItemId === item.purchaseOrderItemId) || {
+        purchaseOrderItemId: item.purchaseOrderItemId,
+        discountType: item.discountType || "Percentage",
+        discountValue: item.discountValue || 0,
+      }
+
+      const quantity = item.quantity || 1
+      const unitPrice = item.unitPrice || 0
+      const taxRate = item.itemDetails?.taxRate || 0
+
+      // Calculate item subtotal
+      const itemSubtotal = quantity * unitPrice
+      subtotal += itemSubtotal
+
+      // Calculate item-level discount
+      let itemDiscount = 0
+      if (editedItem.discountType === "Percentage") {
+        itemDiscount = itemSubtotal * (editedItem.discountValue / 100)
+      } else {
+        itemDiscount = editedItem.discountValue
+      }
+      totalItemDiscount += itemDiscount
+
+      // Calculate tax on discounted amount (after item discounts only)
+      const discountedAmount = Math.max(0, itemSubtotal - itemDiscount)
+      const itemTax = discountedAmount * (taxRate / 100)
+      totalTax += itemTax
+    })
+
+    // Calculate amount after item discounts and tax (this is the final amount before order discount)
+    const amountAfterItemDiscounts = Math.max(0, subtotal - totalItemDiscount)
+    const totalAmountWithTaxBeforeOrderDiscount = amountAfterItemDiscounts + totalTax
+
+    // Calculate order-level discount (this should be calculated from the final amount with tax)
+    let orderDiscount = 0
+    let orderDiscountedAmount = 0
+
+    if (formData.discount > 0) {
+      if (formData.discountType === "PERCENTAGE") {
+        // Apply order discount to the final amount with tax (₹61.49)
+        orderDiscount = totalAmountWithTaxBeforeOrderDiscount * (formData.discount / 100)
+        orderDiscountedAmount = orderDiscount
+      } else {
+        orderDiscount = formData.discount
+        orderDiscountedAmount = orderDiscount
+      }
+    }
+
+    const totalDiscount = totalItemDiscount + orderDiscount
+
+    // Calculate final amount after ALL discounts
+    const finalTotalWithTax = Math.max(0, totalAmountWithTaxBeforeOrderDiscount - orderDiscount)
+
+    return {
+      subtotal, // Original subtotal without any discounts
+      totalItemDiscount, // Only item-level discounts
+      orderDiscount, // Only order-level discount
+      totalDiscount, // Total of all discounts
+      totalTax,
+      totalAmount: subtotal, // This should be the subtotal (no discounts applied)
+      totalAmountWithTax: finalTotalWithTax, // Final amount after ALL discounts and tax
+      totalAmountWithTaxBeforeOrderDiscount, // Amount after item discounts and tax, before order discount
+      orderDiscountedAmount,
+      netAmountBeforeTax: amountAfterItemDiscounts, // Amount after item discounts but before tax
+    }
+  }, [purchaseOrder, editingItems, formData.discount, formData.discountType])
 
   const toggleItemExpansion = useCallback((itemId: number) => {
     setExpandedItems((prev) => (prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]))
@@ -125,39 +234,84 @@ const PurchaseOrderDetails = () => {
   }, [])
 
   const calculateDiscountedTotal = useCallback(() => {
-    if (!purchaseOrder) return 0
+    const { netAmountBeforeTax } = calculateOrderTotals()
+    return netAmountBeforeTax
+  }, [calculateOrderTotals])
 
-    const subtotal = purchaseOrder.totalAmount
-    const discount = formData.discount || 0
+  const calculateDiscountedTotalWithTax = useCallback(() => {
+    const { totalAmountWithTax } = calculateOrderTotals()
+    return totalAmountWithTax
+  }, [calculateOrderTotals])
 
-    if (formData.discountType === "PERCENTAGE") {
-      return subtotal - (subtotal * discount) / 100
+  const supplierName = useMemo(() => {
+    if (!purchaseOrder) return "-"
+    const supplier = suppliers.find((s) => s.id === purchaseOrder.supplierId)
+    return supplier ? supplier.name : `Supplier #${purchaseOrder.supplierId}`
+  }, [purchaseOrder, suppliers])
+
+  const calculateItemDiscountedPrice = useCallback((item: any, editedItem: ItemEditState) => {
+    const quantity = item.quantity || 1
+    const unitPrice = item.unitPrice || 0
+    const taxRate = item.itemDetails?.taxRate || 0
+    const subtotal = quantity * unitPrice
+
+    // Calculate item-level discount
+    let itemDiscount = 0
+    if (editedItem.discountType === "Percentage") {
+      itemDiscount = subtotal * (editedItem.discountValue / 100)
+    } else {
+      itemDiscount = editedItem.discountValue
     }
 
-    return Math.max(0, subtotal - discount)
-  }, [purchaseOrder, formData.discount, formData.discountType])
+    const discountedAmount = Math.max(0, subtotal - itemDiscount)
+    const taxAmount = discountedAmount * (taxRate / 100)
+
+    return discountedAmount + taxAmount
+  }, [])
 
   const handleSaveAll = useCallback(async () => {
     if (!purchaseOrder) return
 
     try {
+      // Calculate proper totals using the helper functions
+      const {
+        subtotal,
+        totalItemDiscount,
+        orderDiscount,
+        totalTax,
+        totalAmount,
+        totalAmountWithTax,
+        orderDiscountedAmount,
+        netAmountBeforeTax,
+        totalAmountWithTaxBeforeOrderDiscount,
+      } = calculateOrderTotals()
+
       const updateData = {
         purchaseOrderId: purchaseOrder.purchaseOrderId,
         supplierId: purchaseOrder.supplierId,
         orderDate: purchaseOrder.orderDate,
         expectedDeliveryDate: purchaseOrder.expectedDeliveryDate,
-        totalAmount: calculateDiscountedTotal(),
+        totalAmount: totalAmount, // This should be the subtotal (₹59.70)
+        totalAmountWithTax: totalAmountWithTax,
         raised: purchaseOrder.raised,
         purchaseOrderItems: purchaseOrder.purchaseOrderItems.map((item) => {
           const editedItem = editingItems.find((editItem) => editItem.purchaseOrderItemId === item.purchaseOrderItemId)
           return {
-            itemDetails: item.itemDetails,
+            itemDetails: {
+              ...item.itemDetails,
+              discountType: editedItem?.discountType || item.itemDetails?.discountType || "Percentage",
+              saleDiscount: editedItem?.discountValue || item.itemDetails?.saleDiscount || 0,
+            },
             purchaseOrderItemId: item.purchaseOrderItemId,
             productId: item.productId || 0,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
             statusOfItem: editedItem?.statusOfItem || item.statusOfItem || "ACTIVE",
             defectQuantity: editedItem?.defectQuantity || item.defectQuantity || 0,
+            // Add discount fields at item level for API
+            discountType: editedItem?.discountType || item.discountType,
+            discountValue: editedItem?.discountValue || item.discountValue,
+            discountAmount: editedItem?.discountValue || item.discountValue || 0,
           }
         }),
         paymentStatus: formData.paymentStatus,
@@ -169,6 +323,15 @@ const PurchaseOrderDetails = () => {
         deductibleWalletAmount: formData.deductibleWalletAmount,
         orderStatus: formData.orderStatus,
         discount: formData.discount,
+        // Add discountDto for order-level discount - FIXED to match backend expectation
+        discountDto:
+          formData.discount > 0
+            ? {
+                discountType: formData.discountType === "PERCENTAGE" ? "Percentage" : "Amount",
+                discountValue: formData.discount,
+                discountedAmount: orderDiscountedAmount,
+              }
+            : undefined,
       }
 
       const response = await dispatch(updatePaymentStatus(updateData)).unwrap()
@@ -182,37 +345,70 @@ const PurchaseOrderDetails = () => {
         description: error.message || "Please try again or contact support if the issue persists",
       })
     }
-  }, [dispatch, id, purchaseOrder, formData, editingItems, calculateDiscountedTotal])
+  }, [dispatch, id, purchaseOrder, formData, editingItems, calculateOrderTotals])
 
   const handleSendPurchase = useCallback(async () => {
     if (!purchaseOrder) return
 
     try {
+      // Calculate totals for sending
+      const {
+        subtotal,
+        totalItemDiscount,
+        orderDiscount,
+        totalTax,
+        totalAmount,
+        totalAmountWithTax,
+        orderDiscountedAmount,
+        netAmountBeforeTax,
+        totalAmountWithTaxBeforeOrderDiscount,
+      } = calculateOrderTotals()
+
       const sendData = {
         purchaseOrderId: purchaseOrder.purchaseOrderId,
         supplierId: purchaseOrder.supplierId,
         orderDate: purchaseOrder.orderDate,
         expectedDeliveryDate: purchaseOrder.expectedDeliveryDate,
-        totalAmount: purchaseOrder.totalAmount,
+        totalAmount: totalAmount, // This should be the subtotal (₹59.70)
+        totalAmountWithTax: totalAmountWithTax,
         raised: purchaseOrder.raised,
-        purchaseOrderItems: purchaseOrder.purchaseOrderItems.map((item) => ({
-          itemDetails: item.itemDetails,
-          purchaseOrderItemId: item.purchaseOrderItemId,
-          productId: item.productId || 0,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          statusOfItem: item.statusOfItem || "ACTIVE",
-          defectQuantity: item.defectQuantity || 0,
-        })),
-        paymentStatus: purchaseOrder.paymentStatus || "PENDING",
+        purchaseOrderItems: purchaseOrder.purchaseOrderItems.map((item) => {
+          const editedItem = editingItems.find((editItem) => editItem.purchaseOrderItemId === item.purchaseOrderItemId)
+          return {
+            itemDetails: {
+              ...item.itemDetails,
+              discountType: editedItem?.discountType || item.itemDetails?.discountType || "Percentage",
+              saleDiscount: editedItem?.discountValue || item.itemDetails?.saleDiscount || 0,
+            },
+            purchaseOrderItemId: item.purchaseOrderItemId,
+            productId: item.productId || 0,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            statusOfItem: editedItem?.statusOfItem || item.statusOfItem || "ACTIVE",
+            defectQuantity: editedItem?.defectQuantity || item.defectQuantity || 0,
+            // Include discount fields for API
+            discountType: editedItem?.discountType || item.discountType,
+            discountValue: editedItem?.discountValue || item.discountValue,
+            discountAmount: editedItem?.discountValue || item.discountValue || 0,
+          }
+        }),
+        paymentStatus: "PENDING",
         paymentCategory: purchaseOrder.paymentCategory || "CASH",
         type: purchaseOrder.type || "MANUAL",
-        status: purchaseOrder.status || "REVIEWED",
-        paidAmount: purchaseOrder.totalAmount,
+        status: "REVIEWED",
+        paidAmount: totalAmountWithTax,
         linkPayment: purchaseOrder.linkPayment || false,
         deductibleWalletAmount: purchaseOrder.deductibleWalletAmount || 0,
-        orderStatus: purchaseOrder.orderStatus || "REVIEWED",
-        discount: purchaseOrder.discount || 0,
+        orderStatus: "REVIEWED",
+        discount: formData.discount,
+        discountDto:
+          formData.discount > 0
+            ? {
+                discountType: formData.discountType === "PERCENTAGE" ? "Percentage" : "Amount",
+                discountValue: formData.discount,
+                discountedAmount: orderDiscountedAmount,
+              }
+            : undefined,
       }
 
       const response = await dispatch(updatePaymentStatus(sendData)).unwrap()
@@ -225,7 +421,7 @@ const PurchaseOrderDetails = () => {
         description: error.message || "Please try again or contact support if the issue persists",
       })
     }
-  }, [dispatch, id, purchaseOrder])
+  }, [dispatch, id, purchaseOrder, formData, editingItems, calculateOrderTotals])
 
   const handleCancelEdit = useCallback(() => {
     if (purchaseOrder) {
@@ -237,7 +433,7 @@ const PurchaseOrderDetails = () => {
         deductibleWalletAmount: purchaseOrder.deductibleWalletAmount || 0,
         orderStatus: purchaseOrder.orderStatus || "",
         discount: purchaseOrder.discount || 0,
-        discountType: "AMOUNT",
+        discountType: purchaseOrder.discountDto?.discountType === "Percentage" ? "PERCENTAGE" : "AMOUNT",
       })
 
       // Reset to original values
@@ -246,6 +442,8 @@ const PurchaseOrderDetails = () => {
           purchaseOrderItemId: item.purchaseOrderItemId,
           statusOfItem: item.statusOfItem || "ACTIVE",
           defectQuantity: item.defectQuantity || 0,
+          discountType: item.discountType || item.itemDetails?.discountType || "Percentage",
+          discountValue: item.discountValue || item.itemDetails?.saleDiscount || 0,
         }))
       )
     }
@@ -266,6 +464,20 @@ const PurchaseOrderDetails = () => {
     setEditingItems((prev) =>
       prev.map((item) =>
         item.purchaseOrderItemId === itemId ? { ...item, defectQuantity: Math.max(0, newQuantity) } : item
+      )
+    )
+  }, [])
+
+  const handleDiscountTypeChange = useCallback((itemId: number, newDiscountType: string) => {
+    setEditingItems((prev) =>
+      prev.map((item) => (item.purchaseOrderItemId === itemId ? { ...item, discountType: newDiscountType } : item))
+    )
+  }, [])
+
+  const handleDiscountValueChange = useCallback((itemId: number, newDiscountValue: number) => {
+    setEditingItems((prev) =>
+      prev.map((item) =>
+        item.purchaseOrderItemId === itemId ? { ...item, discountValue: Math.max(0, newDiscountValue) } : item
       )
     )
   }, [])
@@ -315,6 +527,11 @@ const PurchaseOrderDetails = () => {
     })
   }, [])
 
+  // Calculate order summary for display
+  const orderSummary = useMemo(() => {
+    return calculateOrderTotals()
+  }, [calculateOrderTotals])
+
   // Skeleton Loading Components
   const SkeletonHeader = () => (
     <div className="mb-6 animate-pulse">
@@ -344,7 +561,7 @@ const PurchaseOrderDetails = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              {[1, 2, 3, 4].map((item) => (
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
                 <th key={item} className="px-6 py-3 text-left">
                   <div className="h-4 w-20 rounded bg-gray-300"></div>
                 </th>
@@ -354,7 +571,7 @@ const PurchaseOrderDetails = () => {
           <tbody className="divide-y divide-gray-200 bg-white">
             {[1, 2, 3].map((row) => (
               <tr key={row}>
-                {[1, 2, 3, 4].map((cell) => (
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((cell) => (
                   <td key={cell} className="whitespace-nowrap px-6 py-4">
                     <div className="h-4 w-16 rounded bg-gray-200"></div>
                   </td>
@@ -451,8 +668,8 @@ const PurchaseOrderDetails = () => {
     <>
       <DashboardNav />
       <NotificationProvider />
-      <div className="min-h-screen  bg-[#F4F9F8] p-3 md:p-8">
-        <div className=" w-full">
+      <div className="min-h-screen bg-[#F4F9F8] p-3 md:p-8">
+        <div className="w-full">
           {/* Header Section */}
           <div className="mb-6 flex flex-col justify-between md:flex-row md:items-center">
             <div>
@@ -554,7 +771,7 @@ const PurchaseOrderDetails = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Total Amount</p>
-                  <p className="text-lg font-semibold">₹{purchaseOrder.totalAmount.toFixed(2)}</p>
+                  <p className="text-lg font-semibold">₹{orderSummary.totalAmountWithTax.toFixed(2)}</p>
                 </div>
               </div>
             </div>
@@ -621,8 +838,8 @@ const PurchaseOrderDetails = () => {
                   <span className="font-semibold">#{purchaseOrder.purchaseOrderId}</span>
                 </div>
                 <div className="flex justify-between border-b pb-3">
-                  <span className="font-medium text-gray-600">Supplier ID</span>
-                  <span className="font-semibold">{purchaseOrder.supplierId}</span>
+                  <span className="font-medium text-gray-600">Supplier</span>
+                  <span className="font-semibold">{supplierName}</span>
                 </div>
                 <div className="flex justify-between border-b pb-3">
                   <span className="font-medium text-gray-600">Order Date</span>
@@ -651,19 +868,50 @@ const PurchaseOrderDetails = () => {
               )}
               <div className="space-y-4">
                 <div className="flex justify-between border-b pb-3">
-                  <span className="font-medium text-gray-600">Total Amount</span>
-                  <span className="font-semibold">₹{purchaseOrder.totalAmount.toFixed(2)}</span>
+                  <span className="font-medium text-gray-600">Subtotal</span>
+                  <span className="font-semibold">₹{orderSummary.subtotal.toFixed(2)}</span>
                 </div>
 
-                {/* Discount Section */}
+                {/* Item-level Discount Summary */}
+                {orderSummary.totalItemDiscount > 0 && (
+                  <div className="flex justify-between border-b pb-3">
+                    <span className="font-medium text-gray-600">Item Discounts</span>
+                    <span className="font-semibold text-red-600">-₹{orderSummary.totalItemDiscount.toFixed(2)}</span>
+                  </div>
+                )}
+
+                {/* Amount after item discounts */}
+                {orderSummary.totalItemDiscount > 0 && (
+                  <div className="flex justify-between border-b pb-3">
+                    <span className="font-medium text-gray-600">Amount After Item Discounts</span>
+                    <span className="font-semibold">
+                      ₹{(orderSummary.subtotal - orderSummary.totalItemDiscount).toFixed(2)}
+                    </span>
+                  </div>
+                )}
+
                 <div className="flex justify-between border-b pb-3">
-                  <span className="font-medium text-gray-600">Discount</span>
+                  <span className="font-medium text-gray-600">Tax Amount</span>
+                  <span className="font-semibold">₹{orderSummary.totalTax.toFixed(2)}</span>
+                </div>
+
+                {/* Final amount before order discount */}
+                {/* <div className="flex justify-between border-b pb-3">
+                  <span className="font-medium text-gray-600">Amount Before Order Discount</span>
+                  <span className="font-semibold">
+                    ₹{orderSummary.totalAmountWithTaxBeforeOrderDiscount.toFixed(2)}
+                  </span>
+                </div> */}
+
+                {/* Order-level Discount Section */}
+                <div className="flex justify-between border-b pb-3">
+                  <span className="font-medium text-gray-600">Order Discount</span>
                   {isEditing ? (
                     <div className="flex items-center space-x-2">
                       <select
                         value={formData.discountType}
                         onChange={(e) => setFormData({ ...formData, discountType: e.target.value })}
-                        className="rounded border  border-gray-300 bg-transparent px-2 py-1 text-sm"
+                        className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm"
                       >
                         <option value="AMOUNT">₹</option>
                         <option value="PERCENTAGE">%</option>
@@ -678,14 +926,35 @@ const PurchaseOrderDetails = () => {
                     </div>
                   ) : (
                     <span className="font-semibold">
-                      {purchaseOrder.discount ? `₹${purchaseOrder.discount.toFixed(2)}` : "No discount"}
+                      {purchaseOrder.discount
+                        ? `${
+                            purchaseOrder.discountDto?.discountType === "Percentage"
+                              ? `${purchaseOrder.discount}%`
+                              : `₹${purchaseOrder.discount.toFixed(2)}`
+                          }`
+                        : "No discount"}
                     </span>
                   )}
                 </div>
 
+                {/* Show order discount amount if applied */}
+                {orderSummary.orderDiscount > 0 && (
+                  <div className="flex justify-between border-b pb-3">
+                    <span className="font-medium text-gray-600">Order Discount Amount</span>
+                    <span className="font-semibold text-red-600">-₹{orderSummary.orderDiscount.toFixed(2)}</span>
+                    {/* <span className="ml-2 text-xs text-gray-500">
+                      (
+                      {formData.discountType === "PERCENTAGE"
+                        ? `${formData.discount}% of ₹${orderSummary.totalAmountWithTaxBeforeOrderDiscount.toFixed(2)}`
+                        : ""}
+                      )
+                    </span> */}
+                  </div>
+                )}
+
                 <div className="flex justify-between border-b pb-3">
                   <span className="font-medium text-gray-600">Final Amount</span>
-                  <span className="font-semibold">₹{calculateDiscountedTotal().toFixed(2)}</span>
+                  <span className="font-semibold">₹{orderSummary.totalAmountWithTax.toFixed(2)}</span>
                 </div>
 
                 <div className="flex justify-between border-b pb-3">
@@ -694,7 +963,7 @@ const PurchaseOrderDetails = () => {
                     <select
                       value={formData.paymentStatus}
                       onChange={(e) => setFormData({ ...formData, paymentStatus: e.target.value })}
-                      className="rounded border  border-gray-300 bg-transparent px-2 py-1"
+                      className="rounded border border-gray-300 bg-transparent px-2 py-1"
                     >
                       <option value="PENDING">PENDING</option>
                       <option value="PAID">PAID</option>
@@ -717,7 +986,7 @@ const PurchaseOrderDetails = () => {
                     <select
                       value={formData.paymentCategory}
                       onChange={(e) => setFormData({ ...formData, paymentCategory: e.target.value })}
-                      className="rounded border  border-gray-300 bg-transparent px-2 py-1"
+                      className="rounded border border-gray-300 bg-transparent px-2 py-1"
                     >
                       <option value="CASH">CASH</option>
                       <option value="CARD">CARD</option>
@@ -734,7 +1003,7 @@ const PurchaseOrderDetails = () => {
                     <select
                       value={formData.orderStatus}
                       onChange={(e) => setFormData({ ...formData, orderStatus: e.target.value })}
-                      className="rounded border  border-gray-300  bg-transparent px-2 py-1"
+                      className="rounded border border-gray-300 bg-transparent px-2 py-1"
                     >
                       <option value="CREATED">CREATED</option>
                       <option value="PENDING">PENDING</option>
@@ -774,7 +1043,7 @@ const PurchaseOrderDetails = () => {
                       type="checkbox"
                       checked={formData.linkPayment}
                       onChange={(e) => setFormData({ ...formData, linkPayment: e.target.checked })}
-                      className="h-5 w-5  bg-transparent"
+                      className="size-5 bg-transparent"
                     />
                   ) : (
                     <span className="font-semibold">{purchaseOrder.linkPayment ? "Yes" : "No"}</span>
@@ -823,6 +1092,12 @@ const PurchaseOrderDetails = () => {
                     {isEditing && (
                       <>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                          Discount Type
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                          Discount Value
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                           Status
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -839,19 +1114,28 @@ const PurchaseOrderDetails = () => {
                   {purchaseOrder.purchaseOrderItems.map((item) => {
                     const editedItem = editingItems.find(
                       (editItem) => editItem.purchaseOrderItemId === item.purchaseOrderItemId
-                    ) || { statusOfItem: item.statusOfItem || "ACTIVE", defectQuantity: item.defectQuantity || 0 }
+                    ) || {
+                      purchaseOrderItemId: item.purchaseOrderItemId,
+                      statusOfItem: item.statusOfItem || "ACTIVE",
+                      defectQuantity: item.defectQuantity || 0,
+                      discountType: item.discountType || item.itemDetails?.discountType || "Percentage",
+                      discountValue: item.discountValue || item.itemDetails?.saleDiscount || 0,
+                    }
+
+                    const itemTotal = item.quantity * item.unitPrice
+                    const discountedTotal = calculateItemDiscountedPrice(item, editedItem)
 
                     return (
                       <React.Fragment key={item.purchaseOrderItemId}>
                         <tr className="transition-colors hover:bg-gray-50">
                           <td className="whitespace-nowrap px-6 py-4">
                             <div className="flex items-center">
-                              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-gray-100">
+                              <div className="flex size-10 items-center justify-center rounded-md bg-gray-100">
                                 <FiBox className="text-gray-600" />
                               </div>
                               <div className="ml-4">
                                 <div className="font-medium text-gray-900">
-                                  {item.productId ? `Product #${item.productId}` : `${item.itemDetails?.productName}`}
+                                  {item.itemDetails?.productName || "Product"}
                                 </div>
                                 <div className="text-sm text-gray-500">
                                   {item.itemDetails?.description || "No description available"}
@@ -866,10 +1150,46 @@ const PurchaseOrderDetails = () => {
                           </td>
                           <td className="whitespace-nowrap px-6 py-4 font-medium">₹{item.unitPrice.toFixed(2)}</td>
                           <td className="whitespace-nowrap px-6 py-4 font-medium">
-                            ₹{(item.quantity * item.unitPrice).toFixed(2)}
+                            <div className="flex flex-col">
+                              <span
+                                className={`${
+                                  discountedTotal < itemTotal ? "text-sm text-red-600 line-through" : "font-medium"
+                                }`}
+                              >
+                                ₹{itemTotal.toFixed(2)}
+                              </span>
+                              {discountedTotal < itemTotal && (
+                                <span className="font-medium text-green-600">₹{discountedTotal.toFixed(2)}</span>
+                              )}
+                            </div>
                           </td>
                           {isEditing && (
                             <>
+                              <td className="whitespace-nowrap px-6 py-4">
+                                <select
+                                  value={editedItem.discountType}
+                                  onChange={(e) => handleDiscountTypeChange(item.purchaseOrderItemId, e.target.value)}
+                                  className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm"
+                                >
+                                  <option value="Percentage">Percentage</option>
+                                  <option value="Amount">Amount</option>
+                                </select>
+                              </td>
+                              <td className="whitespace-nowrap px-6 py-4">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step={editedItem.discountType === "Percentage" ? "0.1" : "1"}
+                                  value={editedItem.discountValue}
+                                  onChange={(e) =>
+                                    handleDiscountValueChange(item.purchaseOrderItemId, parseFloat(e.target.value) || 0)
+                                  }
+                                  className="w-20 rounded border border-gray-300 bg-transparent px-2 py-1 text-right text-sm"
+                                />
+                                <span className="ml-1 text-xs text-gray-500">
+                                  {editedItem.discountType === "Percentage" ? "%" : "₹"}
+                                </span>
+                              </td>
                               <td className="whitespace-nowrap px-6 py-4">
                                 <select
                                   value={editedItem.statusOfItem}
@@ -920,7 +1240,7 @@ const PurchaseOrderDetails = () => {
                         </tr>
                         {expandedItems.includes(item.purchaseOrderItemId) && item.itemDetails && (
                           <tr className="bg-gray-50">
-                            <td colSpan={isEditing ? 7 : 5} className="px-6 py-4">
+                            <td colSpan={isEditing ? 9 : 5} className="px-6 py-4">
                               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 <div className="flex items-start">
                                   <FiTag className="mr-2 mt-1 text-blue-500" />
@@ -988,6 +1308,26 @@ const PurchaseOrderDetails = () => {
                                     </p>
                                   </div>
                                 </div>
+                                <div className="flex items-start">
+                                  <FiPercent className="mr-2 mt-1 text-purple-500" />
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-600">Discount Type</p>
+                                    <p className="text-sm">{item.itemDetails?.discountType || "Percentage"}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-start">
+                                  <FiDollarSign className="mr-2 mt-1 text-green-500" />
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-600">Discount Value</p>
+                                    <p className="text-sm">
+                                      {item.itemDetails?.saleDiscount
+                                        ? `${item.itemDetails.saleDiscount}${
+                                            item.itemDetails?.discountType === "Percentage" ? "%" : "₹"
+                                          }`
+                                        : "0%"}
+                                    </p>
+                                  </div>
+                                </div>
                               </div>
                             </td>
                           </tr>
@@ -1003,36 +1343,63 @@ const PurchaseOrderDetails = () => {
                     </td>
                     <td
                       className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900"
-                      colSpan={isEditing ? 3 : 1}
+                      colSpan={isEditing ? 5 : 1}
                     >
-                      ₹{(purchaseOrder.totalAmount ?? 0).toFixed(2)}
+                      ₹{orderSummary.subtotal.toFixed(2)}
                     </td>
                   </tr>
-                  {(purchaseOrder.discount ?? 0) > 0 && (
+                  {orderSummary.totalItemDiscount > 0 && (
                     <tr>
                       <td
                         colSpan={isEditing ? 4 : 3}
                         className="px-6 py-4 text-right text-sm font-medium text-gray-900"
                       >
-                        Discount
+                        Item Discounts
                       </td>
                       <td
                         className="whitespace-nowrap px-6 py-4 text-sm font-medium text-red-600"
-                        colSpan={isEditing ? 3 : 1}
+                        colSpan={isEditing ? 5 : 1}
                       >
-                        -₹{(purchaseOrder.discount ?? 0).toFixed(2)}
+                        -₹{orderSummary.totalItemDiscount.toFixed(2)}
                       </td>
                     </tr>
                   )}
+                  {orderSummary.orderDiscount > 0 && (
+                    <tr>
+                      <td
+                        colSpan={isEditing ? 4 : 3}
+                        className="px-6 py-4 text-right text-sm font-medium text-gray-900"
+                      >
+                        Order Discount
+                      </td>
+                      <td
+                        className="whitespace-nowrap px-6 py-4 text-sm font-medium text-red-600"
+                        colSpan={isEditing ? 5 : 1}
+                      >
+                        -₹{orderSummary.orderDiscount.toFixed(2)}
+                      </td>
+                    </tr>
+                  )}
+                  <tr>
+                    <td colSpan={isEditing ? 4 : 3} className="px-6 py-4 text-right text-sm font-medium text-gray-900">
+                      Tax Amount
+                    </td>
+                    <td
+                      className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900"
+                      colSpan={isEditing ? 5 : 1}
+                    >
+                      ₹{orderSummary.totalTax.toFixed(2)}
+                    </td>
+                  </tr>
                   <tr>
                     <td colSpan={isEditing ? 4 : 3} className="px-6 py-4 text-right text-lg font-bold text-gray-900">
                       Grand Total
                     </td>
                     <td
                       className="whitespace-nowrap px-6 py-4 text-lg font-bold text-gray-900"
-                      colSpan={isEditing ? 3 : 1}
+                      colSpan={isEditing ? 5 : 1}
                     >
-                      ₹{calculateDiscountedTotal().toFixed(2)}
+                      ₹{orderSummary.totalAmountWithTax.toFixed(2)}
                     </td>
                   </tr>
                 </tfoot>

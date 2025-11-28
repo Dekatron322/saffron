@@ -12,9 +12,29 @@ import PurchaseIcon from "public/Icons/purchase-icon"
 import SalesIcon from "public/Icons/sales-icon"
 import React, { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
-import { fetchAllProducts, fetchStockSummary, selectProducts, selectStockSummary } from "app/api/store/productSlice"
+import {
+  fetchAllProducts,
+  fetchStockSummary,
+  fetchProductTransactions,
+  fetchTransactionDetails,
+  selectProducts,
+  selectStockSummary,
+  selectProductTransactions,
+  selectTransactionDetails,
+} from "app/api/store/productSlice"
 import { AnimatePresence, motion } from "framer-motion"
 import { useAppDispatch } from "app/api/store/store"
+import TransactionDetailsModal from "components/ui/Modal/transaction-details-modal"
+import {
+  AvailableStockIcon,
+  PurchasesIcon,
+  SaleIcon,
+  StockChangeIcon,
+  StockIcon,
+  StockProductIcon,
+  StockQuantityIcon,
+  StockValueIcon,
+} from "components/Icons/Icons"
 
 interface Transaction {
   id: string
@@ -26,6 +46,13 @@ interface Transaction {
   invoiceNumber: string
   status: "Pending" | "Completed" | "Failed" | "Processing"
   quantity: number
+  pricePerUnit: number
+  unit: string
+  customer?: string
+  supplier?: string
+  invoiceNo?: string
+  totalPrice?: number
+  invoiceDate?: string
 }
 
 const SkeletonLoader = ({ className }: { className: string }) => (
@@ -42,11 +69,25 @@ const Products = () => {
   const dispatch = useAppDispatch()
   const { products, loading, error, pagination } = useSelector(selectProducts)
   const { stockSummary, loading: stockSummaryLoading, error: stockSummaryError } = useSelector(selectStockSummary)
+  const {
+    productTransactions,
+    loading: productTransactionsLoading,
+    error: productTransactionsError,
+  } = useSelector(selectProductTransactions)
+  const {
+    transactionDetails,
+    loading: transactionDetailsLoading,
+    error: transactionDetailsError,
+  } = useSelector(selectTransactionDetails)
+
   const [searchText, setSearchText] = useState("")
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [filteredProducts, setFilteredProducts] = useState<any[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [transactionsLoading, setTransactionsLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [pageSize] = useState(5)
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false)
 
   // Animation variants
   const containerVariants = {
@@ -102,13 +143,17 @@ const Products = () => {
     }),
   }
 
+  // Load all products at once
   useEffect(() => {
-    dispatch(fetchAllProducts(0, 10))
+    // Fetch all products without pagination - use a large number to get all products
+    dispatch(fetchAllProducts(0, 1000)) // Load 1000 products at once
+
     // Fetch stock summary for the current year
     const currentYear = new Date().getFullYear()
     dispatch(fetchStockSummary(`${currentYear}-01-01`, `${currentYear}-12-31`))
   }, [dispatch])
 
+  // Filter products based on search
   useEffect(() => {
     if (searchText && products.length > 0) {
       const filtered = products.filter((product) =>
@@ -120,41 +165,98 @@ const Products = () => {
     }
   }, [searchText, products])
 
+  // Transform transactions when product is selected
   useEffect(() => {
-    if (selectedProduct) {
-      setTransactionsLoading(true)
-      // Simulate API call with timeout
-      const timer = setTimeout(() => {
-        setTransactionsLoading(false)
-        setTransactions([]) // Replace with actual API data
-      }, 1000)
-      return () => clearTimeout(timer)
+    if (selectedProduct && productTransactions) {
+      const transformedTransactions: Transaction[] =
+        productTransactions.transactionSummary?.map((transaction: any, index: number) => ({
+          id: `trans-${index}-${transaction.invoiceNo}`,
+          type: transaction.type,
+          customerId: transaction.customer || transaction.supplier || "N/A",
+          name: transaction.customer || transaction.supplier || "N/A",
+          date: transaction.invoiceDate,
+          amount: transaction.totalPrice,
+          invoiceNumber: transaction.invoiceNo?.toString() || "N/A",
+          status: transaction.status === "Paid" ? ("Completed" as const) : ("Pending" as const),
+          quantity: transaction.quantity,
+          pricePerUnit: transaction.pricePerUnit,
+          unit: transaction.unit,
+        })) || []
+
+      setTransactions(transformedTransactions)
     } else {
       setTransactions([])
     }
-  }, [selectedProduct])
+  }, [selectedProduct, productTransactions])
 
   const handleCancelSearch = () => {
     setSearchText("")
     setFilteredProducts(products)
   }
 
-  const handleProductClick = (product: any) => {
+  const handleProductClick = async (product: any) => {
     setSelectedProduct(product)
+    setCurrentPage(0) // Reset to first page when selecting new product
+    try {
+      await dispatch(
+        fetchProductTransactions({
+          name: product.productName,
+          page: 0,
+          size: pageSize,
+          sortBy: "invoiceDate",
+          sortDir: "desc",
+        })
+      )
+    } catch (error) {
+      console.error("Failed to fetch product transactions:", error)
+    }
   }
 
-  const handleRepeatOrder = (orderId: string) => {
-    console.log(`Repeating order ${orderId}`)
+  const handleLoadMore = async () => {
+    if (!selectedProduct) return
+
+    const nextPage = currentPage + 1
+    try {
+      await dispatch(
+        fetchProductTransactions({
+          name: selectedProduct.productName,
+          page: nextPage,
+          size: pageSize,
+          sortBy: "invoiceDate",
+          sortDir: "desc",
+        })
+      )
+      setCurrentPage(nextPage)
+    } catch (error) {
+      console.error("Failed to load more transactions:", error)
+    }
   }
 
-  const handleViewInvoice = (invoiceNumber?: string) => {
-    const path = invoiceNumber ? `transactions/invoice-detail?invoice=${invoiceNumber}` : `transactions/invoice-detail`
-    router.push(path)
+  const handleViewTransaction = async (transaction: Transaction) => {
+    setSelectedTransaction(transaction)
+    try {
+      await dispatch(
+        fetchTransactionDetails({
+          type: transaction.type,
+          invoiceNo: parseInt(transaction.invoiceNumber),
+        })
+      )
+      setIsTransactionModalOpen(true)
+    } catch (error) {
+      console.error("Failed to fetch transaction details:", error)
+      setIsTransactionModalOpen(true)
+    }
   }
 
-  const getStatusColor = (status: Transaction["status"]) => {
+  const handleCloseTransactionModal = () => {
+    setIsTransactionModalOpen(false)
+    setSelectedTransaction(null)
+  }
+
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "Completed":
+      case "Paid":
         return "bg-green-100 text-green-800"
       case "Pending":
         return "bg-yellow-100 text-yellow-800"
@@ -167,6 +269,10 @@ const Products = () => {
     }
   }
 
+  const getTransactionIcon = (type: string) => {
+    return type === "Sale" ? <SalesIcon /> : <PurchaseIcon />
+  }
+
   const calculateAvailableQuantity = (product: any) => {
     return product.currentStockLevel ?? 0
   }
@@ -176,9 +282,25 @@ const Products = () => {
   }
 
   const handleRefresh = () => {
-    dispatch(fetchAllProducts(pagination.currentPage, pagination.pageSize))
+    // Reload all products
+    dispatch(fetchAllProducts(0, 1000))
+
     const currentYear = new Date().getFullYear()
     dispatch(fetchStockSummary(`${currentYear}-01-01`, `${currentYear}-12-31`))
+
+    // Refresh transactions if a product is selected
+    if (selectedProduct) {
+      dispatch(
+        fetchProductTransactions({
+          name: selectedProduct.productName,
+          page: 0,
+          size: pageSize,
+          sortBy: "invoiceDate",
+          sortDir: "desc",
+        })
+      )
+      setCurrentPage(0)
+    }
   }
 
   if (error) {
@@ -199,7 +321,7 @@ const Products = () => {
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-12 w-12 text-red-600"
+            className="size-12 text-red-600"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -284,48 +406,82 @@ const Products = () => {
               ) : stockSummary ? (
                 <>
                   <motion.div className="rounded-lg border bg-white p-4" variants={itemVariants} whileHover="hover">
-                    <h3 className="text-sm font-medium text-gray-500">Total Stock</h3>
-                    <motion.p
-                      className="text-2xl font-bold"
-                      initial={{ scale: 0.9 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.1 }}
-                    >
-                      {stockSummary.totalStock}
-                    </motion.p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="rounded-lg bg-[#B1EEE226] p-3 ">
+                          <StockIcon />
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Total Stock</h3>
+
+                        <motion.p
+                          className="text-2xl font-bold"
+                          initial={{ scale: 0.9 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: 0.1 }}
+                        >
+                          {stockSummary.totalStock}
+                        </motion.p>
+                      </div>
+                    </div>
                   </motion.div>
                   <motion.div className="rounded-lg border bg-white p-4" variants={itemVariants} whileHover="hover">
-                    <h3 className="text-sm font-medium text-gray-500">Total Stock Value</h3>
-                    <motion.p
-                      className="text-2xl font-bold"
-                      initial={{ scale: 0.9 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.2 }}
-                    >
-                      ₹{stockSummary.totalStockAmount?.toFixed(2) || "0.00"}
-                    </motion.p>
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-lg bg-[#B1EEE226] p-3 ">
+                        <StockValueIcon />
+                      </div>
+
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Total Stock Value</h3>
+                        <motion.p
+                          className="text-2xl font-bold"
+                          initial={{ scale: 0.9 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: 0.2 }}
+                        >
+                          ₹{stockSummary.totalStockAmount?.toFixed(2) || "0.00"}
+                        </motion.p>
+                      </div>
+                    </div>
                   </motion.div>
                   <motion.div className="rounded-lg border bg-white p-4" variants={itemVariants} whileHover="hover">
-                    <h3 className="text-sm font-medium text-gray-500">Change</h3>
-                    <motion.p
-                      className="text-2xl font-bold text-green-600"
-                      initial={{ scale: 0.9 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.3 }}
-                    >
-                      {stockSummary.percentChange}
-                    </motion.p>
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-lg bg-[#B1EEE226] p-3 ">
+                        <StockChangeIcon />
+                      </div>
+
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Change</h3>
+                        <motion.p
+                          className="text-2xl font-bold text-[#00a4a6]"
+                          initial={{ scale: 0.9 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: 0.3 }}
+                        >
+                          {stockSummary.percentChange}
+                        </motion.p>
+                      </div>
+                    </div>
                   </motion.div>
                   <motion.div className="rounded-lg border bg-white p-4" variants={itemVariants} whileHover="hover">
-                    <h3 className="text-sm font-medium text-gray-500">Products</h3>
-                    <motion.p
-                      className="text-2xl font-bold"
-                      initial={{ scale: 0.9 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.4 }}
-                    >
-                      {stockSummary.productDto?.length || 0}
-                    </motion.p>
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-lg bg-[#B1EEE226] p-3 ">
+                        <StockProductIcon />
+                      </div>
+
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Products</h3>
+                        <motion.p
+                          className="text-2xl font-bold"
+                          initial={{ scale: 0.9 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: 0.4 }}
+                        >
+                          {stockSummary.productDto?.length || 0}
+                        </motion.p>
+                      </div>
+                    </div>
                   </motion.div>
                 </>
               ) : null}
@@ -352,14 +508,14 @@ const Products = () => {
                     </motion.div>
                   </div>
 
-                  {loading ? (
+                  {loading && filteredProducts.length === 0 ? (
                     <div className="mt-3 flex flex-col gap-2">
                       {[...Array(5)].map((_, i) => (
                         <SkeletonLoader key={i} className="h-8 w-full" />
                       ))}
                     </div>
                   ) : filteredProducts.length > 0 ? (
-                    <div className="mt-3 flex flex-col gap-2">
+                    <div className="mt-3 flex max-h-[400px] flex-col gap-2 overflow-y-auto">
                       {filteredProducts.map((product, index) => (
                         <motion.p
                           key={product.productId}
@@ -402,7 +558,7 @@ const Products = () => {
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.4 }}
                 >
-                  {loading ? (
+                  {loading && filteredProducts.length === 0 ? (
                     <div>
                       <SkeletonLoader className="mb-4 h-6 w-1/3" />
                       <div className="mb-6 grid grid-cols-4 gap-4">
@@ -456,6 +612,7 @@ const Products = () => {
                         Product Details for {selectedProduct.productName}
                       </motion.h2>
 
+                      {/* Product Summary Cards */}
                       <div className="mb-6 grid grid-cols-4 gap-4">
                         <motion.div
                           className="rounded-lg border p-4"
@@ -464,10 +621,21 @@ const Products = () => {
                           animate="visible"
                           transition={{ delay: 0.1 }}
                         >
-                          <h3 className="text-sm font-medium text-gray-500">Sales Price</h3>
-                          <motion.p className="text-2xl font-bold" initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
-                            ₹{selectedProduct.salePrice?.toFixed(2) || "N/A"}
-                          </motion.p>
+                          <div className="flex items-center gap-2">
+                            <div className="rounded-lg bg-[#B1EEE226] p-3 ">
+                              <SaleIcon />
+                            </div>
+
+                            <div>
+                              <h3 className="text-sm font-medium text-gray-500">Sales Price</h3>
+                              <motion.p className="text-2xl font-bold" initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
+                                ₹
+                                {productTransactions?.salePrice?.toFixed(2) ||
+                                  selectedProduct.salePrice?.toFixed(2) ||
+                                  "N/A"}
+                              </motion.p>
+                            </div>
+                          </div>
                         </motion.div>
                         <motion.div
                           className="rounded-lg border p-4"
@@ -476,10 +644,21 @@ const Products = () => {
                           animate="visible"
                           transition={{ delay: 0.2 }}
                         >
-                          <h3 className="text-sm font-medium text-gray-500">Purchase Price</h3>
-                          <motion.p className="text-2xl font-bold" initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
-                            ₹{selectedProduct.purchasePrice?.toFixed(2) || "N/A"}
-                          </motion.p>
+                          <div className="flex items-center gap-2">
+                            <div className="rounded-lg bg-[#B1EEE226] p-3 ">
+                              <PurchasesIcon />
+                            </div>
+
+                            <div>
+                              <h3 className="text-sm font-medium text-gray-500">Purchase Price</h3>
+                              <motion.p className="text-2xl font-bold" initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
+                                ₹
+                                {productTransactions?.purchasePrice?.toFixed(2) ||
+                                  selectedProduct.purchasePrice?.toFixed(2) ||
+                                  "N/A"}
+                              </motion.p>
+                            </div>
+                          </div>
                         </motion.div>
                         <motion.div
                           className="rounded-lg border p-4"
@@ -488,10 +667,18 @@ const Products = () => {
                           animate="visible"
                           transition={{ delay: 0.3 }}
                         >
-                          <h3 className="text-sm font-medium text-gray-500">Stock Quantity</h3>
-                          <motion.p className="text-2xl font-bold" initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
-                            {selectedProduct.currentStockLevel || "N/A"}
-                          </motion.p>
+                          <div className="flex items-center gap-2">
+                            <div className="rounded-lg bg-[#B1EEE226] p-3 ">
+                              <StockQuantityIcon />
+                            </div>
+
+                            <div>
+                              <h3 className="text-sm font-medium text-gray-500">Stock Quantity</h3>
+                              <motion.p className="text-2xl font-bold" initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
+                                {productTransactions?.stockQuantity || selectedProduct.currentStockLevel || "N/A"}
+                              </motion.p>
+                            </div>
+                          </div>
                         </motion.div>
                         <motion.div
                           className="rounded-lg border p-4"
@@ -500,10 +687,18 @@ const Products = () => {
                           animate="visible"
                           transition={{ delay: 0.4 }}
                         >
-                          <h3 className="text-sm font-medium text-gray-500">Available Units</h3>
-                          <motion.p className="text-2xl font-bold" initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
-                            {calculateAvailableQuantity(selectedProduct)}
-                          </motion.p>
+                          <div className="flex items-center gap-2">
+                            <div className="rounded-lg bg-[#B1EEE226] p-3 ">
+                              <AvailableStockIcon />
+                            </div>
+
+                            <div>
+                              <h3 className="text-sm font-medium text-gray-500">Available Units</h3>
+                              <motion.p className="text-2xl font-bold" initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
+                                {productTransactions?.availableUnit || calculateAvailableQuantity(selectedProduct)}
+                              </motion.p>
+                            </div>
+                          </div>
                         </motion.div>
                       </div>
 
@@ -514,8 +709,19 @@ const Products = () => {
                       >
                         Recent Transactions
                       </motion.h3>
+
+                      {productTransactionsError && (
+                        <motion.div
+                          className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-600"
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                        >
+                          {productTransactionsError}
+                        </motion.div>
+                      )}
+
                       <AnimatePresence>
-                        {transactionsLoading ? (
+                        {productTransactionsLoading ? (
                           <div className="space-y-4">
                             {[...Array(3)].map((_, i) => (
                               <motion.div
@@ -554,6 +760,9 @@ const Products = () => {
                                       Quantity
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                      Price/Unit
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                                       Amount
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -577,7 +786,7 @@ const Products = () => {
                                       <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{index + 1}</td>
                                       <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                         <div className="flex items-center gap-1">
-                                          {transaction.type === "Sales" ? <SalesIcon /> : <PurchaseIcon />}
+                                          {getTransactionIcon(transaction.type)}
                                           {transaction.type}
                                         </div>
                                       </td>
@@ -591,10 +800,15 @@ const Products = () => {
                                         {new Date(transaction.date).toLocaleDateString()}
                                       </td>
                                       <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                                        {transaction.quantity}
+                                        {transaction.quantity} {transaction.unit || "units"}
                                       </td>
                                       <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                                        ₹{(transaction.amount / transaction.quantity).toFixed(2)}
+                                        ₹
+                                        {transaction.pricePerUnit?.toFixed(2) ||
+                                          (transaction.amount / transaction.quantity).toFixed(2)}
+                                      </td>
+                                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                        ₹{transaction.amount?.toFixed(2)}
                                       </td>
                                       <td className="whitespace-nowrap px-6 py-4">
                                         <motion.span
@@ -608,12 +822,12 @@ const Products = () => {
                                       </td>
                                       <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                         <motion.button
-                                          onClick={() => handleRepeatOrder(transaction.id)}
+                                          onClick={() => handleViewTransaction(transaction)}
                                           className="flex items-center gap-1 text-blue-600 hover:text-blue-900"
                                           whileHover={{ scale: 1.05 }}
                                           whileTap={{ scale: 0.95 }}
                                         >
-                                          Repeat
+                                          View Details
                                         </motion.button>
                                       </td>
                                     </motion.tr>
@@ -621,6 +835,25 @@ const Products = () => {
                                 </tbody>
                               </table>
                             </div>
+
+                            {/* Load More Button */}
+                            {productTransactions && !productTransactions.lastPage && (
+                              <motion.div
+                                className="mt-4 flex justify-center"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                              >
+                                <ButtonModule
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={handleLoadMore}
+                                  disabled={productTransactionsLoading}
+                                >
+                                  {productTransactionsLoading ? "Loading..." : "Load More"}
+                                </ButtonModule>
+                              </motion.div>
+                            )}
+
                             <motion.div
                               className="mt-4 flex w-full justify-end gap-2"
                               initial={{ opacity: 0, y: 10 }}
@@ -641,15 +874,19 @@ const Products = () => {
                           </>
                         ) : (
                           <motion.div
-                            className="flex w-full flex-col items-center justify-center gap-3"
+                            className="flex w-full flex-col items-center justify-center gap-3 py-8"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5 }}
                           >
                             <EmptyState />
-                            <p>No recent transactions found for this product.</p>
+                            <p className="text-gray-500">No recent transactions found for this product.</p>
                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                              <ButtonModule variant="primary" size="sm" onClick={() => handleViewInvoice()}>
+                              <ButtonModule
+                                variant="primary"
+                                size="sm"
+                                onClick={() => router.push("/transactions/invoice-detail")}
+                              >
                                 <p className="max-sm:hidden">Create Order</p>
                               </ButtonModule>
                             </motion.div>
@@ -659,11 +896,14 @@ const Products = () => {
                     </div>
                   ) : (
                     <motion.div
-                      className="flex h-full items-center justify-center"
+                      className="flex h-full items-center justify-center py-12"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                     >
-                      <p className="text-gray-500">Select a product to view details and transactions</p>
+                      <div className="text-center">
+                        <EmptyState />
+                        <p className="mt-4 text-gray-500">Select a product to view details and transactions</p>
+                      </div>
                     </motion.div>
                   )}
                 </motion.div>
@@ -672,6 +912,16 @@ const Products = () => {
           </div>
         </div>
       </div>
+
+      {/* Transaction Details Modal */}
+      <TransactionDetailsModal
+        isOpen={isTransactionModalOpen}
+        transaction={selectedTransaction}
+        transactionDetails={transactionDetails}
+        loading={transactionDetailsLoading}
+        error={transactionDetailsError}
+        onRequestClose={handleCloseTransactionModal}
+      />
     </motion.section>
   )
 }

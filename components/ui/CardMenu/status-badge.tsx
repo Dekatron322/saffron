@@ -12,7 +12,7 @@ const StatusBadge = ({ status }: StatusBadgeProps) => {
         status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
       }`}
     >
-      <span className={`mr-1.5 h-2 w-2 rounded-full ${status === "Active" ? "bg-green-500" : "bg-red-500"}`}></span>
+      <span className={`mr-1.5 size-2 rounded-full ${status === "Active" ? "bg-green-500" : "bg-red-500"}`}></span>
       {status}
     </span>
   )

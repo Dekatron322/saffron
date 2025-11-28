@@ -2,9 +2,15 @@
 "use client"
 import React, { useEffect, useRef, useState } from "react"
 
+interface DropdownOption {
+  value: string
+  label: string
+  nodeLabel?: React.ReactNode
+}
+
 interface DropdownPopoverProps {
   label: string
-  options: { value: string; label: string }[]
+  options: DropdownOption[]
   placeholder: string
   value: string
   onChange: (value: string) => void
@@ -29,7 +35,7 @@ export const DropdownPopoverModule: React.FC<DropdownPopoverProps> = ({
 
   const selectedOption = options.find((option) => option.value === value)
 
-  // Filter options based on search term
+  // Filter options based on search term (uses plain string label for search)
   const filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchTerm.toLowerCase()))
 
   // Close dropdown when clicking outside
@@ -83,10 +89,10 @@ export const DropdownPopoverModule: React.FC<DropdownPopoverProps> = ({
         tabIndex={0}
       >
         <span className={`w-full text-base ${!value && "text-gray-400"}`}>
-          {selectedOption ? selectedOption.label : placeholder}
+          {selectedOption ? selectedOption.nodeLabel || selectedOption.label : placeholder}
         </span>
         <svg
-          className={`ml-2 h-5 w-5 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`ml-2 size-5 transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -121,7 +127,7 @@ export const DropdownPopoverModule: React.FC<DropdownPopoverProps> = ({
                   }`}
                   onClick={() => handleSelect(option.value)}
                 >
-                  <span>{option.label}</span>
+                  <span>{option.nodeLabel || option.label}</span>
                 </div>
               ))
             ) : (

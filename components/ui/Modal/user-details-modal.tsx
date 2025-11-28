@@ -105,21 +105,21 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, userId, onR
       overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       ariaHideApp={false}
     >
-      <div ref={modalRef} className="flex h-full w-full flex-col">
+      <div ref={modalRef} className="flex size-full flex-col">
         {/* Header */}
         <div className="flex items-center justify-between border-b p-4">
           <div className="flex items-center gap-3">
             {userDetailLoading ? (
-              <div className="h-12 w-12 animate-pulse rounded-full bg-gray-200" />
+              <div className="size-12 animate-pulse rounded-full bg-gray-200" />
             ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+              <div className="flex size-12 items-center justify-center rounded-full bg-gray-100">
                 {currentUser?.firstName && currentUser?.lastName ? (
                   <span className="text-lg font-semibold text-gray-600">
                     {currentUser.firstName.charAt(0)}
                     {currentUser.lastName.charAt(0)}
                   </span>
                 ) : (
-                  <RxAvatar className="h-6 w-6 text-gray-500" />
+                  <RxAvatar className="size-6 text-gray-500" />
                 )}
               </div>
             )}
@@ -157,10 +157,10 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, userId, onR
                 <div className="space-y-3">
                   {[1, 2, 3, 4].map((item) => (
                     <div key={item} className="flex items-center gap-3">
-                      <div className="h-5 w-5 animate-pulse rounded-full bg-gray-200" />
+                      <div className="size-5 animate-pulse rounded-full bg-gray-200" />
                       <div>
                         <div className="h-3 w-16 animate-pulse rounded bg-gray-200" />
-                        <div className="mt-1 h-4 w-40 animate-pulse rounded bg-gray-200" />
+                        <div className="mt-1 size-40 animate-pulse rounded bg-gray-200" />
                       </div>
                     </div>
                   ))}
@@ -173,10 +173,10 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, userId, onR
                 <div className="space-y-3">
                   {[1, 2, 3, 4].map((item) => (
                     <div key={item} className="flex items-center gap-3">
-                      <div className="h-5 w-5 animate-pulse rounded-full bg-gray-200" />
+                      <div className="size-5 animate-pulse rounded-full bg-gray-200" />
                       <div>
                         <div className="h-3 w-24 animate-pulse rounded bg-gray-200" />
-                        <div className="mt-1 h-4 w-40 animate-pulse rounded bg-gray-200" />
+                        <div className="mt-1 size-40 animate-pulse rounded bg-gray-200" />
                       </div>
                     </div>
                   ))}
@@ -215,28 +215,28 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, userId, onR
                     <h3 className="mb-3 text-sm font-semibold text-gray-700">User Information</h3>
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
-                        <FiUser className="h-5 w-5 text-gray-400" />
+                        <FiUser className="size-5 text-gray-400" />
                         <div>
                           <p className="text-xs text-gray-500">Username</p>
                           <p className="text-sm font-medium text-gray-800">{currentUser.userName || "Not provided"}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <FiMail className="h-5 w-5 text-gray-400" />
+                        <FiMail className="size-5 text-gray-400" />
                         <div>
                           <p className="text-xs text-gray-500">Email</p>
                           <p className="text-sm font-medium text-gray-800">{currentUser.email || "Not provided"}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <FiPhone className="h-5 w-5 text-gray-400" />
+                        <FiPhone className="size-5 text-gray-400" />
                         <div>
                           <p className="text-xs text-gray-500">Phone</p>
                           <p className="text-sm font-medium text-gray-800">{currentUser.mobileNo || "Not provided"}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <FiUser className="h-5 w-5 text-gray-400" />
+                        <FiUser className="size-5 text-gray-400" />
                         <div>
                           <p className="text-xs text-gray-500">Full Name</p>
                           <p className="text-sm font-medium text-gray-800">
@@ -274,7 +274,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, userId, onR
                               />
                             </div>
                           ) : (
-                            <FiBriefcase className="h-5 w-5 text-gray-400" />
+                            <FiBriefcase className="size-5 text-gray-400" />
                           )}
                           <div>
                             <p className="text-xs text-gray-500">Organization Name</p>
@@ -286,7 +286,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, userId, onR
 
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                           <div className="flex items-center gap-3">
-                            <FiFileText className="h-5 w-5 text-gray-400" />
+                            <FiFileText className="size-5 text-gray-400" />
                             <div>
                               <p className="text-xs text-gray-500">Business Type</p>
                               <p className="text-sm font-medium text-gray-800">
@@ -296,7 +296,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, userId, onR
                           </div>
 
                           <div className="flex items-center gap-3">
-                            <FiBriefcase className="h-5 w-5 text-gray-400" />
+                            <FiBriefcase className="size-5 text-gray-400" />
                             <div>
                               <p className="text-xs text-gray-500">Category</p>
                               <p className="text-sm font-medium text-gray-800">
@@ -306,7 +306,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, userId, onR
                           </div>
 
                           <div className="flex items-center gap-3">
-                            <FiCreditCard className="h-5 w-5 text-gray-400" />
+                            <FiCreditCard className="size-5 text-gray-400" />
                             <div>
                               <p className="text-xs text-gray-500">License ID</p>
                               <p className="text-sm font-medium text-gray-800">
@@ -316,7 +316,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, userId, onR
                           </div>
 
                           <div className="flex items-center gap-3">
-                            <FiCreditCard className="h-5 w-5 text-gray-400" />
+                            <FiCreditCard className="size-5 text-gray-400" />
                             <div>
                               <p className="text-xs text-gray-500">GSTIN</p>
                               <p className="text-sm font-medium text-gray-800">{orgDetails.gstin || "Not provided"}</p>
@@ -325,7 +325,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, userId, onR
                         </div>
 
                         <div className="flex items-center gap-3">
-                          <FiHome className="h-5 w-5 text-gray-400" />
+                          <FiHome className="size-5 text-gray-400" />
                           <div>
                             <p className="text-xs text-gray-500">Address</p>
                             <p className="text-sm font-medium text-gray-800">{orgDetails.address || "Not provided"}</p>
@@ -333,7 +333,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, userId, onR
                         </div>
 
                         <div className="flex items-center gap-3">
-                          <FiPhone className="h-5 w-5 text-gray-400" />
+                          <FiPhone className="size-5 text-gray-400" />
                           <div>
                             <p className="text-xs text-gray-500">Contact</p>
                             <p className="text-sm font-medium text-gray-800">

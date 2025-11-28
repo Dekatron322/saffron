@@ -11,11 +11,20 @@ import AddCustomerModal from "components/ui/Modal/add-customer-modal"
 import EditCustomerModal from "components/ui/Modal/edit-customer-modal"
 import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import { useRouter } from "next/navigation"
-import { deleteCustomer, fetchAllCustomers, selectCustomers } from "app/api/store/customerSlice"
+import {
+  deleteCustomer,
+  fetchAllCustomers,
+  selectCustomers,
+  createWallet,
+  updateWallet,
+  fetchCustomerById,
+} from "app/api/store/customerSlice"
 import DeleteCustomerModal from "components/ui/Modal/delete-customer-modal"
 import CustomerDetailsModal from "components/ui/Modal/customer-details-modal"
 import { AnimatePresence, motion } from "framer-motion"
 import ArrowIcon from "public/Icons/arrowIcon"
+import WalletModal from "components/ui/Modal/wallet-modal"
+import { notify } from "components/ui/Notification/Notification"
 
 type SortOrder = "asc" | "desc" | null
 type Order = {
@@ -26,6 +35,15 @@ type Order = {
   type: string
   status: string
   totalOrders: string
+}
+
+interface WalletData {
+  customerId: number
+  date: string
+  paymentType: string
+  amount: number
+  description: string
+  receivedAmount: number
 }
 
 const SkeletonRow = () => {
@@ -90,6 +108,34 @@ const AllCustomers = () => {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null)
+  const [hasCompletedInitialLoad, setHasCompletedInitialLoad] = useState(false)
+
+  // Wallet states
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false)
+  const [selectedCustomerForWallet, setSelectedCustomerForWallet] = useState<any>(null)
+  const [walletAction, setWalletAction] = useState<"create" | "update">("create")
+  const [existingWalletId, setExistingWalletId] = useState<number | null>(null)
+  const [customerWalletStatus, setCustomerWalletStatus] = useState<{ [key: number]: boolean }>({})
+
+  // Create a ref for wallet functions to use in DropdownMenu
+  const walletActionsRef = useRef({
+    setIsWalletModalOpen,
+    setSelectedCustomerForWallet,
+    setWalletAction,
+    setExistingWalletId,
+    customers,
+  })
+
+  // Update ref when state changes
+  useEffect(() => {
+    walletActionsRef.current = {
+      setIsWalletModalOpen,
+      setSelectedCustomerForWallet,
+      setWalletAction,
+      setExistingWalletId,
+      customers,
+    }
+  }, [setIsWalletModalOpen, setSelectedCustomerForWallet, setWalletAction, setExistingWalletId, customers])
 
   const DropdownMenu = React.memo(
     ({ order, onClose, onEdit }: { order: Order; onClose: () => void; onEdit: () => void }) => {
@@ -109,6 +155,46 @@ const AllCustomers = () => {
         onEdit()
         onClose()
       }
+
+      const handleWalletAction = async () => {
+        const { customers, setIsWalletModalOpen, setSelectedCustomerForWallet, setWalletAction, setExistingWalletId } =
+          walletActionsRef.current
+
+        const customer = customers.find((c) => c.customerProfileId === order.sn)
+        if (customer) {
+          // Open modal immediately and default to create; refine after async fetch
+          setSelectedCustomerForWallet(customer)
+          setWalletAction("create")
+          setExistingWalletId(null)
+          setIsWalletModalOpen(true)
+
+          try {
+            // Fetch the latest customer details to get walletAmt - SINGLE API CALL
+            const customerDetails = await dispatch(fetchCustomerById(order.sn))
+
+            if (customerDetails) {
+              const walletAmount = customerDetails.walletAmt || 0
+
+              // Determine wallet action based on wallet amount
+              const hasWallet = walletAmount > 0
+              setWalletAction(hasWallet ? "update" : "create")
+
+              // For update, we need to get the existing wallet ID
+              setExistingWalletId(hasWallet ? order.sn : null)
+            }
+          } catch (error) {
+            console.error("Failed to fetch customer details for wallet:", error)
+            notify("error", "Failed to check wallet status", {
+              title: "Error",
+              description: "Could not determine wallet status for this customer",
+            })
+          }
+        }
+        onClose()
+      }
+
+      // Check if customer has wallet based on walletAmt
+      const hasWallet = customerWalletStatus[order.sn] || false
 
       return (
         <motion.div
@@ -138,6 +224,14 @@ const AllCustomers = () => {
             <motion.button
               whileHover={{ backgroundColor: "#f3f4f6" }}
               whileTap={{ scale: 0.98 }}
+              onClick={handleWalletAction}
+              className="block w-full px-4 py-2 text-left text-sm text-blue-600"
+            >
+              {hasWallet ? "Update Wallet" : "Create Wallet"}
+            </motion.button>
+            <motion.button
+              whileHover={{ backgroundColor: "#f3f4f6" }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleDelete}
               className="block w-full px-4 py-2 text-left text-sm text-red-600"
             >
@@ -151,6 +245,26 @@ const AllCustomers = () => {
 
   // Fix: Add displayName to the memoized component
   DropdownMenu.displayName = "DropdownMenu"
+
+  // SIMPLIFIED: Check wallet status from customer data directly without additional API calls
+  const checkCustomerWallets = useCallback(() => {
+    const walletStatus: { [key: number]: boolean } = {}
+
+    // Use existing customer data to determine wallet status
+    customers.forEach((customer) => {
+      // Assuming walletAmt is included in the customer data from fetchAllCustomers
+      const walletAmount = customer.walletAmt || 0
+      walletStatus[customer.customerProfileId] = walletAmount > 0
+    })
+
+    setCustomerWalletStatus(walletStatus)
+  }, [customers])
+
+  useEffect(() => {
+    if (customers.length > 0) {
+      checkCustomerWallets()
+    }
+  }, [customers, checkCustomerWallets])
 
   const handleDeleteConfirmation = async (reason: string) => {
     if (!customerToDelete) return
@@ -167,27 +281,23 @@ const AllCustomers = () => {
     }
   }
 
-  const fetchCustomers = useCallback(
-    async (signal?: AbortSignal) => {
-      try {
-        await dispatch(fetchAllCustomers(currentPage - 1, itemsPerPage, signal))
-      } catch (error) {
-        if (!(error instanceof Error && error.name === "AbortError")) {
-          console.error("Failed to fetch customers:", error)
-        }
-      }
-    },
-    [dispatch, currentPage, itemsPerPage]
-  )
-
+  // SINGLE useEffect for fetching customers - handles both initial load and page changes
   useEffect(() => {
     const controller = new AbortController()
-    fetchCustomers(controller.signal)
+
+    // Fetch customers with current page and items per page
+    dispatch(fetchAllCustomers(currentPage - 1, itemsPerPage, controller.signal))
 
     return () => {
       controller.abort()
     }
-  }, [fetchCustomers])
+  }, [dispatch, currentPage, itemsPerPage]) // Only depend on these stable values
+
+  useEffect(() => {
+    if (!loading) {
+      setHasCompletedInitialLoad(true)
+    }
+  }, [loading])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -261,6 +371,72 @@ const AllCustomers = () => {
     exportToCSV(dataToExport, "customers_export.csv")
   }
 
+  // Wallet functions
+  const handleCreateWallet = async (walletData: WalletData) => {
+    try {
+      const result = await dispatch(createWallet(walletData))
+      setIsWalletModalOpen(false)
+      // REMOVED: notify call from here
+      // Refresh wallet status after creation
+      checkCustomerWallets()
+      return result
+    } catch (error) {
+      console.error("Failed to create wallet:", error)
+      throw error
+    }
+  }
+
+  const handleUpdateWallet = async (walletData: WalletData) => {
+    if (!existingWalletId) return
+
+    try {
+      const result = await dispatch(updateWallet(existingWalletId, walletData))
+      setIsWalletModalOpen(false)
+      // REMOVED: notify call from here
+      // Refresh wallet status after update
+      checkCustomerWallets()
+      return result
+    } catch (error) {
+      console.error("Failed to update wallet:", error)
+      throw error
+    }
+  }
+
+  const handleWalletSubmit = async (walletData: WalletData) => {
+    try {
+      let result
+      if (walletAction === "create") {
+        result = await handleCreateWallet(walletData)
+        // Add success notification HERE only
+        notify("success", "Wallet created successfully!", {
+          title: "Success",
+          description: `Wallet has been created for ${selectedCustomerForWallet?.customerName}.`,
+        })
+      } else {
+        result = await handleUpdateWallet(walletData)
+        // Add success notification HERE only
+        notify("success", "Wallet updated successfully!", {
+          title: "Success",
+          description: `Wallet has been updated for ${selectedCustomerForWallet?.customerName}.`,
+        })
+      }
+      return result
+    } catch (error: any) {
+      // Handle "wallet already exists" error by switching to update mode
+      if (error.message && error.message.includes("Wallet already exists for customer")) {
+        setWalletAction("update")
+        setExistingWalletId(walletData.customerId)
+        notify("info", "Wallet already exists. Switching to update mode.", {
+          title: "Wallet Exists",
+          description: "This customer already has a wallet. Please update the wallet instead.",
+        })
+        // Re-throw the error to prevent closing the modal
+        throw error
+      }
+      throw error
+    }
+  }
+
   const filteredCustomers = useMemo(() => {
     return customers.filter((customer) =>
       Object.values(customer).some((value) => {
@@ -274,6 +450,62 @@ const AllCustomers = () => {
     setCurrentPage(pageNumber)
   }
 
+  // Function to generate pagination buttons with ellipsis
+  const getPaginationButtons = () => {
+    const totalPages = pagination.totalPages
+    const buttons = []
+    const maxVisiblePages = 5 // Maximum number of page buttons to show
+
+    if (totalPages <= maxVisiblePages) {
+      // If total pages is less than max visible pages, show all
+      for (let i = 1; i <= totalPages; i++) {
+        buttons.push(i)
+      }
+    } else {
+      // Always show first page
+      buttons.push(1)
+
+      // Calculate start and end of visible page range
+      let startPage = Math.max(2, currentPage - 1)
+      let endPage = Math.min(totalPages - 1, currentPage + 1)
+
+      // Adjust if we're at the beginning
+      if (currentPage <= 3) {
+        endPage = 4
+      }
+
+      // Adjust if we're at the end
+      if (currentPage >= totalPages - 2) {
+        startPage = totalPages - 3
+      }
+
+      // Add ellipsis after first page if needed
+      if (startPage > 2) {
+        buttons.push("ellipsis-left")
+      }
+
+      // Add middle pages
+      for (let i = startPage; i <= endPage; i++) {
+        buttons.push(i)
+      }
+
+      // Add ellipsis before last page if needed
+      if (endPage < totalPages - 1) {
+        buttons.push("ellipsis-right")
+      }
+
+      // Always show last page
+      buttons.push(totalPages)
+    }
+
+    return buttons
+  }
+
+  // Debug: log when wallet modal state changes
+  useEffect(() => {
+    console.log("Wallet modal state:", isWalletModalOpen)
+  }, [isWalletModalOpen])
+
   return (
     <>
       <AddCustomerModal isOpen={isAddCustomerOpen} onClose={toggleAddCustomer} />
@@ -283,7 +515,34 @@ const AllCustomers = () => {
         customer={selectedCustomer}
         onCustomerUpdated={() => {
           dispatch(fetchAllCustomers(currentPage - 1, itemsPerPage))
+          checkCustomerWallets()
         }}
+      />
+
+      {/* Wallet Modal */}
+      {isWalletModalOpen && (
+        <WalletModal
+          isOpen={isWalletModalOpen}
+          onClose={() => setIsWalletModalOpen(false)}
+          onSubmit={handleWalletSubmit}
+          customer={selectedCustomerForWallet}
+          action={walletAction}
+          existingWalletId={existingWalletId}
+        />
+      )}
+
+      <DeleteCustomerModal
+        isOpen={isDeleteModalOpen}
+        onRequestClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirmation}
+        loading={isDeleting}
+        customerName={customerToDelete?.name || ""}
+      />
+
+      <CustomerDetailsModal
+        isOpen={isDetailsModalOpen}
+        customerId={selectedCustomerId}
+        onRequestClose={() => setIsDetailsModalOpen(false)}
       />
 
       <motion.div
@@ -347,7 +606,7 @@ const AllCustomers = () => {
           </motion.div>
         </div>
 
-        {loading ? (
+        {loading || !hasCompletedInitialLoad ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -404,7 +663,7 @@ const AllCustomers = () => {
               </tbody>
             </table>
           </motion.div>
-        ) : error ? (
+        ) : error && customers.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -435,13 +694,6 @@ const AllCustomers = () => {
               <table className="w-full min-w-[800px] border-separate border-spacing-0 text-left">
                 <thead>
                   <tr>
-                    <th
-                      className="flex cursor-pointer items-center gap-2 whitespace-nowrap border-b bg-[#F4F9F8] p-4 text-sm"
-                      onClick={() => toggleSort("sn")}
-                    >
-                      <MdOutlineCheckBoxOutlineBlank className="text-lg" />
-                      SN <RxCaretSort />
-                    </th>
                     <th
                       className="cursor-pointer whitespace-nowrap border-b bg-[#F4F9F8] p-4 text-sm"
                       onClick={() => toggleSort("customerName")}
@@ -505,12 +757,6 @@ const AllCustomers = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2, delay: index * 0.05 }}
                       >
-                        <td className="whitespace-nowrap border-b px-4 py-2 text-sm">
-                          <div className="flex items-center gap-2">
-                            <MdOutlineCheckBoxOutlineBlank className="text-lg" />
-                            {index + 1}
-                          </div>
-                        </td>
                         <td className="whitespace-nowrap border-b px-4 py-2 text-sm">
                           <div className="flex items-center gap-2">{customer.customerProfileId}</div>
                         </td>
@@ -615,19 +861,29 @@ const AllCustomers = () => {
                   <MdOutlineArrowBackIosNew />
                 </motion.button>
 
-                {Array.from({ length: Math.min(5, pagination.totalPages) }).map((_, index) => (
-                  <motion.button
-                    key={index}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => paginate(index + 1)}
-                    className={`rounded-full px-3 py-1 ${
-                      currentPage === index + 1 ? "bg-primary text-[#ffffff]" : "bg-gray-200 hover:bg-gray-300"
-                    }`}
-                  >
-                    {index + 1}
-                  </motion.button>
-                ))}
+                {getPaginationButtons().map((page, index) => {
+                  if (page === "ellipsis-left" || page === "ellipsis-right") {
+                    return (
+                      <span key={index} className="px-2 py-1">
+                        ...
+                      </span>
+                    )
+                  }
+
+                  return (
+                    <motion.button
+                      key={index}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => paginate(page as number)}
+                      className={`rounded-full px-3 py-1 ${
+                        currentPage === page ? "bg-primary text-[#ffffff]" : "bg-gray-200 hover:bg-gray-300"
+                      }`}
+                    >
+                      {page}
+                    </motion.button>
+                  )
+                })}
 
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -647,20 +903,6 @@ const AllCustomers = () => {
           </>
         )}
       </motion.div>
-
-      <DeleteCustomerModal
-        isOpen={isDeleteModalOpen}
-        onRequestClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirmation}
-        loading={isDeleting}
-        customerName={customerToDelete?.name || ""}
-      />
-
-      <CustomerDetailsModal
-        isOpen={isDetailsModalOpen}
-        customerId={selectedCustomerId}
-        onRequestClose={() => setIsDetailsModalOpen(false)}
-      />
     </>
   )
 }

@@ -61,7 +61,7 @@ const FreezeAccountModal: React.FC<FreezeAccountModalProps> = ({ isOpen, onReque
             {loading ? (
               <div className="flex items-center justify-center">
                 <svg
-                  className="mr-2 h-5 w-5 animate-spin"
+                  className="mr-2 size-5 animate-spin"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"

@@ -62,7 +62,7 @@ const TransactionsOverviewCard = () => {
   const LowStockItem = ({ name, change, color }: { name: string; change: number; color: string }) => (
     <div className="flex w-full items-center justify-between py-3">
       <div className="flex items-center gap-2">
-        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+        <div className="size-2 rounded-full" style={{ backgroundColor: color }} />
         <p className="text-secondary">{name}</p>
       </div>
       <div className="flex items-center gap-1">
@@ -128,7 +128,7 @@ const TransactionsOverviewCard = () => {
             {rxOtcData.map((entry, idx) => (
               <div key={idx} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: entry.color }} />
+                  <span className="inline-block size-3 rounded-full" style={{ backgroundColor: entry.color }} />
                   <span className="text-sm">{entry.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -174,7 +174,7 @@ const TransactionsOverviewCard = () => {
             {rxOtcData.map((entry, idx) => (
               <div key={idx} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: entry.color }} />
+                  <span className="inline-block size-3 rounded-full" style={{ backgroundColor: entry.color }} />
                   <span className="text-sm">{entry.name}</span>
                 </div>
                 <div className="flex items-center gap-2">

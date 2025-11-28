@@ -31,7 +31,7 @@ const SkeletonLoader = () => {
           <tr>
             <th className="whitespace-nowrap border-b bg-[#F4F9F8] p-4 text-sm">
               <div className="flex items-center gap-2">
-                <div className="h-5 w-5 animate-pulse rounded bg-gray-200"></div>
+                <div className="size-5 animate-pulse rounded bg-gray-200"></div>
                 <div className="h-4 w-16 animate-pulse rounded bg-gray-200"></div>
               </div>
             </th>
@@ -54,7 +54,7 @@ const SkeletonLoader = () => {
             <tr key={index}>
               <td className="whitespace-nowrap border-b px-4 py-3 text-sm">
                 <div className="flex items-center gap-2">
-                  <div className="h-5 w-5 animate-pulse rounded bg-gray-200"></div>
+                  <div className="size-5 animate-pulse rounded bg-gray-200"></div>
                   <div className="h-4 w-8 animate-pulse rounded bg-gray-200"></div>
                 </div>
               </td>
@@ -68,7 +68,7 @@ const SkeletonLoader = () => {
                 <div className="h-4 w-16 animate-pulse rounded bg-gray-200"></div>
               </td>
               <td className="whitespace-nowrap border-b px-4 py-3 text-sm">
-                <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200"></div>
+                <div className="size-8 animate-pulse rounded-full bg-gray-200"></div>
               </td>
             </tr>
           ))}

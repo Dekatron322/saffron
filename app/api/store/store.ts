@@ -15,6 +15,11 @@ import overviewReducer from "./overviewSlice"
 import unitsOrderedReducer from "./unitsOrderedSlice"
 import pendingDeliveriesReducer from "./pendingDeliveriesSlice"
 import returnPurchaseOrderReducer from "./returnPurchaseOrderSlice"
+import financeReducer from "./financeSlice"
+import promoCodeReducer from "./promoCodeSlice"
+import salesReducer from "./salesSlice"
+import loyaltyReducer from "./loyaltySlice"
+import dashboardReducer from "./dashboardSlice"
 
 export const store = configureStore({
   reducer: {
@@ -32,6 +37,11 @@ export const store = configureStore({
     unitsOrdered: unitsOrderedReducer,
     pendingDeliveries: pendingDeliveriesReducer,
     returnPurchaseOrder: returnPurchaseOrderReducer,
+    finance: financeReducer,
+    promoCode: promoCodeReducer,
+    sales: salesReducer,
+    loyalty: loyaltyReducer,
+    dashboard: dashboardReducer,
   },
 })
 

@@ -16,7 +16,7 @@ export default function Dashboard() {
               <div className="w-full">
                 <CardMenu />
                 <OverviewCard />
-                <RecentActivityTable />
+                {/* <RecentActivityTable /> */}
               </div>
             </div>
           </div>

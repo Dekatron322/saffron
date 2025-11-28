@@ -59,7 +59,7 @@ const MessageDropdown = () => {
         {open && (
           <div className="absolute right-0 z-50 mt-2 w-56 rounded-md bg-white shadow-lg">
             <div className="flex items-center gap-2 border-b px-4 py-2">
-              <div className="bg-primary flex h-10 w-10 items-center justify-center rounded-full text-white">MI</div>
+              <div className="bg-primary flex size-10 items-center justify-center rounded-full text-white">MI</div>
               <div className="flex flex-col gap-0">
                 <p className="m-0 inline-block font-bold leading-none text-[#202B3C]">Muritala Ibrahim</p>
                 <small className="text-grey-400 m-0 inline-block text-sm leading-none">example@otech.com</small>

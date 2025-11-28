@@ -13,6 +13,7 @@ interface LogoutModalProps {
 }
 
 const LogoutModal: React.FC<LogoutModalProps> = ({ isOpen, onRequestClose, onConfirm, loading }) => {
+  
   return (
     <Modal
       isOpen={isOpen}

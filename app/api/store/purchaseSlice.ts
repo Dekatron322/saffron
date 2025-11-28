@@ -11,6 +11,14 @@ interface PurchaseOrderItem {
   unitPrice: number
   statusOfItem: string
   defectQuantity: number
+  discountType?: string
+  discountValue?: number
+}
+
+interface DiscountDto {
+  discountType: string
+  discountValue: number
+  discountedAmount: number
 }
 
 interface PurchaseOrder {
@@ -19,6 +27,8 @@ interface PurchaseOrder {
   orderDate: string
   expectedDeliveryDate: string | null
   totalAmount: number
+  totalAmountWithTax: number
+  discountDto?: DiscountDto
   discount?: number
   raised: boolean
   purchaseOrderItems: PurchaseOrderItem[]
@@ -134,7 +144,6 @@ interface CreatePurchaseOrderResponse {
 interface UpdatePurchaseOrderResponse {
   success: boolean
   message: string
-  // Remove purchaseOrder since it's not in the API response
 }
 
 interface PurchaseOrderByIdResponse {
@@ -143,6 +152,8 @@ interface PurchaseOrderByIdResponse {
   orderDate: string
   expectedDeliveryDate: string | null
   totalAmount: number
+  totalAmountWithTax: number
+  discountDto?: DiscountDto
   discount?: number
   raised: boolean
   purchaseOrderItems: PurchaseOrderItem[]
@@ -162,6 +173,8 @@ interface UpdatePaymentStatusRequest {
   orderDate: string
   expectedDeliveryDate: string | null
   totalAmount: number
+  totalAmountWithTax: number
+  discountDto?: DiscountDto
   discount?: number
   raised: boolean
   purchaseOrderItems: PurchaseOrderItem[]
@@ -340,10 +353,85 @@ const initialState: PurchaseState = {
   returnNoteResponse: null,
 }
 
+// Helper function to calculate item total with discount and tax
+const calculateItemTotalWithTax = (item: PurchaseOrderItem, editedItem?: any) => {
+  const quantity = item.quantity || 1
+  const unitPrice = item.unitPrice || 0
+  const taxRate = item.itemDetails?.taxRate || 0
+  const inclusiveOfTax = item.itemDetails?.inclusiveOfTax || false
+
+  let subtotal = quantity * unitPrice
+  let discountAmount = 0
+
+  // Apply item-level discount if available
+  if (editedItem) {
+    if (editedItem.discountType === "Percentage") {
+      discountAmount = subtotal * (editedItem.discountValue / 100)
+    } else {
+      discountAmount = editedItem.discountValue
+    }
+  }
+
+  const discountedSubtotal = Math.max(0, subtotal - discountAmount)
+
+  if (inclusiveOfTax) {
+    // If tax is inclusive, the discountedSubtotal already includes tax
+    return discountedSubtotal
+  } else {
+    // If tax is exclusive, add tax to discounted amount
+    const taxAmount = discountedSubtotal * (taxRate / 100)
+    return discountedSubtotal + taxAmount
+  }
+}
+
+// Helper function to calculate order totals
+const calculateOrderTotals = (purchaseOrder: PurchaseOrderByIdResponse, formData: any, editingItems: any[]) => {
+  let totalAmount = 0
+  let totalAmountWithTax = 0
+
+  // Calculate item-level totals
+  purchaseOrder.purchaseOrderItems.forEach((item) => {
+    const editedItem = editingItems.find((editItem) => editItem.purchaseOrderItemId === item.purchaseOrderItemId)
+
+    const quantity = item.quantity || 1
+    const unitPrice = item.unitPrice || 0
+    const itemSubtotal = quantity * unitPrice
+
+    // Add to totalAmount (without tax)
+    totalAmount += itemSubtotal
+
+    // Calculate item total with tax
+    const itemTotalWithTax = calculateItemTotalWithTax(item, editedItem)
+    totalAmountWithTax += itemTotalWithTax
+  })
+
+  // Apply order-level discount
+  let finalTotalAmount = totalAmount
+  let finalTotalAmountWithTax = totalAmountWithTax
+
+  if (formData.discount && formData.discount > 0) {
+    if (formData.discountType === "PERCENTAGE") {
+      finalTotalAmount = totalAmount - (totalAmount * formData.discount) / 100
+      finalTotalAmountWithTax = totalAmountWithTax - (totalAmountWithTax * formData.discount) / 100
+    } else {
+      // Distribute the flat discount proportionally between amount and amount with tax
+      const discountRatio = formData.discount / totalAmount
+      finalTotalAmount = Math.max(0, totalAmount - formData.discount)
+      finalTotalAmountWithTax = Math.max(0, totalAmountWithTax - totalAmountWithTax * discountRatio)
+    }
+  }
+
+  return {
+    totalAmount: finalTotalAmount,
+    totalAmountWithTax: finalTotalAmountWithTax,
+  }
+}
+
 const purchaseSlice = createSlice({
   name: "purchase",
   initialState,
   reducers: {
+    // ... keep all your existing reducers the same
     fetchPurchasesStart(state) {
       state.loading = true
       state.error = null
@@ -381,9 +469,6 @@ const purchaseSlice = createSlice({
       state.updating = false
       state.updateError = null
       state.updatedOrder = action.payload
-      // Note: The update purchase-order API does not return the full updated purchase order.
-      // If you need to reflect the latest data in-state, trigger a refetch of the order
-      // in the component after this succeeds (similar to the extraReducers for the thunk).
     },
     updatePurchaseOrderFailure(state, action: PayloadAction<string>) {
       state.updating = false
@@ -442,7 +527,6 @@ const purchaseSlice = createSlice({
       state.creatingReturnReason = false
       state.createReturnReasonError = null
       state.createdReturnReason = action.payload
-      // Add the new reason to the list
       state.purchaseReturnReasons.push(action.payload)
     },
     createPurchaseReturnReasonFailure(state, action: PayloadAction<string>) {
@@ -463,7 +547,6 @@ const purchaseSlice = createSlice({
       state.purchaseLedgersError = null
     },
     fetchPurchaseLedgersSuccess(state, action: PayloadAction<PurchaseLedgerGroupedResponse>) {
-      // Extract all ledgers from the grouped response and flatten them
       const allLedgers: PurchaseLedger[] = []
       action.payload.purchaseOrders.forEach((order) => {
         allLedgers.push(...order.ledgers)
@@ -533,7 +616,6 @@ const purchaseSlice = createSlice({
         state.updatePaymentStatusError = null
       })
       .addCase(updatePaymentStatus.fulfilled, (state, action) => {
-        // Update the specific purchase order in the purchases array
         const updatedOrder = action.payload.purchaseOrder
         const index = state.purchases.findIndex((order) => order.purchaseOrderId === updatedOrder.purchaseOrderId)
 
@@ -541,7 +623,6 @@ const purchaseSlice = createSlice({
           state.purchases[index] = updatedOrder
         }
 
-        // Also update the currentPurchaseOrder if it's the one being updated
         if (state.currentPurchaseOrder && state.currentPurchaseOrder.purchaseOrderId === updatedOrder.purchaseOrderId) {
           state.currentPurchaseOrder = updatedOrder
         }
@@ -575,7 +656,6 @@ const purchaseSlice = createSlice({
         state.creatingReturnReason = false
         state.createReturnReasonError = null
         state.createdReturnReason = action.payload
-        // Add the new reason to the list
         state.purchaseReturnReasons.push(action.payload)
       })
       .addCase(createPurchaseReturnReason.rejected, (state, action) => {
@@ -588,7 +668,6 @@ const purchaseSlice = createSlice({
         state.purchaseLedgersError = null
       })
       .addCase(fetchPurchaseLedgers.fulfilled, (state, action) => {
-        // Extract all ledgers from the grouped response and flatten them
         const allLedgers: PurchaseLedger[] = []
         action.payload.purchaseOrders.forEach((order) => {
           allLedgers.push(...order.ledgers)
@@ -641,13 +720,6 @@ const purchaseSlice = createSlice({
         state.updating = false
         state.updateError = null
         state.updatedOrder = action.payload
-
-        // Since the API doesn't return the updated purchase order,
-        // we need to refetch it to update our state
-        if (state.currentPurchaseOrder) {
-          // You might want to dispatch fetchPurchaseOrderById here
-          // or handle this in your component
-        }
       })
       .addCase(updatePurchaseOrder.rejected, (state, action) => {
         state.updating = false
@@ -872,7 +944,6 @@ export const fetchPurchaseReturnReasons = createAsyncThunk<PurchaseReturnReason[
       )
 
       console.log("Return reasons response:", response.data)
-      // Return the array directly since the API returns an array
       return response.data
     } catch (error: any) {
       let errorMessage = "Failed to fetch purchase return reasons"
@@ -927,7 +998,6 @@ export const fetchPurchaseLedgers = createAsyncThunk<PurchaseLedgerGroupedRespon
       const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken")
       if (!token) throw new Error("No authentication token found")
 
-      // Create request body with pagination parameters
       const requestBody = {
         pageNo: 0,
         pageSize: 100,
@@ -991,6 +1061,9 @@ export const createReturnNote = createAsyncThunk<ReturnNoteResponse, ReturnNoteR
     }
   }
 )
+
+// Export the helper functions for use in components
+export { calculateOrderTotals, calculateItemTotalWithTax }
 
 export const selectPurchases = (state: RootState) => state.purchase
 export const selectCurrentPurchaseOrder = (state: RootState) => state.purchase.currentPurchaseOrder

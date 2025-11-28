@@ -1,4 +1,3 @@
-// components/ui/Cards/CustomerActivity.tsx
 import React from "react"
 import { FaHistory, FaShoppingCart } from "react-icons/fa"
 

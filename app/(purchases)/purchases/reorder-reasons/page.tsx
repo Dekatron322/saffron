@@ -192,7 +192,7 @@ const AddReturnReasonModal: React.FC<AddReturnReasonModalProps> = ({ isOpen, onC
                   animate={{ opacity: 1 }}
                 >
                   <svg
-                    className="mr-2 h-5 w-5 animate-spin"
+                    className="mr-2 size-5 animate-spin"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -269,14 +269,14 @@ const PurchaseReturnReasons = () => {
 
   const getReasonIcon = (reasonType: string) => {
     const type = reasonType.toLowerCase()
-    if (type.includes("expir")) return <FiCalendar className="h-5 w-5 text-red-500" />
-    if (type.includes("damag")) return <FiXCircle className="h-5 w-5 text-yellow-500" />
-    if (type.includes("broken")) return <FiXCircle className="h-5 w-5 text-orange-500" />
-    if (type.includes("leak")) return <FiAlertCircle className="h-5 w-5 text-purple-500" />
-    if (type.includes("duplicate")) return <FiBox className="h-5 w-5 text-blue-500" />
-    if (type.includes("substitut")) return <FiAlertCircle className="h-5 w-5 text-indigo-500" />
-    if (type.includes("overcharg")) return <FiAlertCircle className="h-5 w-5 text-pink-500" />
-    return <FiBox className="h-5 w-5 text-gray-500" />
+    if (type.includes("expir")) return <FiCalendar className="size-5 text-red-500" />
+    if (type.includes("damag")) return <FiXCircle className="size-5 text-yellow-500" />
+    if (type.includes("broken")) return <FiXCircle className="size-5 text-orange-500" />
+    if (type.includes("leak")) return <FiAlertCircle className="size-5 text-purple-500" />
+    if (type.includes("duplicate")) return <FiBox className="size-5 text-blue-500" />
+    if (type.includes("substitut")) return <FiAlertCircle className="size-5 text-indigo-500" />
+    if (type.includes("overcharg")) return <FiAlertCircle className="size-5 text-pink-500" />
+    return <FiBox className="size-5 text-gray-500" />
   }
 
   const handleAddSuccess = () => {
@@ -301,7 +301,7 @@ const PurchaseReturnReasons = () => {
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="animate-pulse rounded-lg bg-white p-6 shadow-sm">
                   <div className="mb-3 h-5 w-32 rounded bg-gray-200"></div>
-                  <div className="h-4 w-48 rounded bg-gray-200"></div>
+                  <div className="size-48 rounded bg-gray-200"></div>
                 </div>
               ))}
             </div>
@@ -318,7 +318,7 @@ const PurchaseReturnReasons = () => {
         <div className="flex min-h-screen items-center justify-center bg-gray-50">
           <div className="text-center">
             <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-red-100 p-4 text-red-600">
-              <FiXCircle className="h-8 w-8" />
+              <FiXCircle className="size-8" />
             </div>
             <h2 className="mb-2 text-xl font-semibold text-gray-800">Error Loading Return Reasons</h2>
             <p className="mb-4 text-gray-600">{error}</p>
@@ -345,7 +345,7 @@ const PurchaseReturnReasons = () => {
             <div className="flex gap-4">
               <button
                 onClick={() => window.history.back()}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="flex size-10 items-center justify-center rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <FiArrowLeft />
               </button>
@@ -364,7 +364,7 @@ const PurchaseReturnReasons = () => {
           <div className="relative max-w-lg">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <svg
-                className="h-5 w-5 text-gray-400"
+                className="size-5 text-gray-400"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
@@ -421,7 +421,7 @@ const PurchaseReturnReasons = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center rounded-lg bg-white py-12 shadow-sm">
-              <FiBox className="h-12 w-12 text-gray-400" />
+              <FiBox className="size-12 text-gray-400" />
               <h3 className="mt-4 text-lg font-semibold text-gray-900">No return reasons found</h3>
               <p className="mt-2 text-gray-600">Try adjusting your search term</p>
             </div>

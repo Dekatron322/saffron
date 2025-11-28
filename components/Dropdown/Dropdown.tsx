@@ -37,7 +37,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             {value || `Pending, Confirmed, Delivered, or Cancelled ${label}`}
           </span>
           <svg
-            className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""} ${
+            className={`size-4 transition-transform ${isOpen ? "rotate-180" : ""} ${
               disabled ? "text-gray-500" : "text-black"
             }`}
             xmlns="http://www.w3.org/2000/svg"

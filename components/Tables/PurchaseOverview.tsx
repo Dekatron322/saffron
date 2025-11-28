@@ -173,8 +173,8 @@ const PurchaseOverview = () => {
         purchaseId: `#PUR${purchase.purchaseOrderId.toString().padStart(5, "0")}`,
         supplier: getSupplierNameById(purchase.supplierId),
         itemPurchased: `${purchase.purchaseOrderItems.length} items`,
-        // FIXED: Added null check for totalAmount
-        payment70: (purchase.totalAmount || 0).toLocaleString("en-IN", {
+        // Use totalAmountWithTax (tax-inclusive total). Fallback to totalAmount if needed.
+        payment70: (purchase.totalAmountWithTax || 0).toLocaleString("en-IN", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         }),
@@ -270,7 +270,7 @@ const PurchaseOverview = () => {
   }
 
   const handleAddInvoice = () => {
-    router.push(`order-creation`)
+    router.push(`/purchases?tab=2`)
   }
 
   const toggleDropdown = (purchaseId: string, event: React.MouseEvent) => {
@@ -369,16 +369,16 @@ const PurchaseOverview = () => {
     if (!logo) {
       return (
         <div className="flex items-center gap-2">
-          <img src="/DashboardImages/Package.png" alt="Default bank" className="icon-style h-5 w-5" />
-          <img src="/DashboardImages/Package-dark.png" alt="Default bank dark" className="dark-icon-style h-5 w-5" />
+          <img src="/DashboardImages/Package.png" alt="Default bank" className="icon-style size-5" />
+          <img src="/DashboardImages/Package-dark.png" alt="Default bank dark" className="dark-icon-style size-5" />
         </div>
       )
     }
 
     return (
       <div className="flex items-center gap-2">
-        <img src={logo.light} alt={logo.alt} className="icon-style h-5 w-5" />
-        {logo.dark && <img src={logo.dark} alt={logo.alt} className="dark-icon-style h-5 w-5" />}
+        <img src={logo.light} alt={logo.alt} className="icon-style size-5" />
+        {logo.dark && <img src={logo.dark} alt={logo.alt} className="dark-icon-style size-5" />}
       </div>
     )
   }

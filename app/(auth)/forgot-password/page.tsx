@@ -122,12 +122,12 @@ const ForgotPassword: React.FC = () => {
     <motion.section
       initial="hidden"
       animate="visible"
-      className="relative flex h-auto w-full flex-grow overflow-hidden bg-[#FFFFFF]"
+      className="relative flex h-auto w-full grow overflow-hidden bg-[#FFFFFF]"
     >
       <div className="grid h-screen w-full items-center md:grid-cols-2">
         {/* Centered login form container */}
         <motion.div
-          className="flex h-full w-full items-center justify-center"
+          className="flex size-full items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -184,7 +184,7 @@ const ForgotPassword: React.FC = () => {
                     {loading ? (
                       <div className="flex items-center justify-center">
                         <svg
-                          className="mr-2 h-5 w-5 animate-spin"
+                          className="mr-2 size-5 animate-spin"
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
@@ -232,12 +232,12 @@ const ForgotPassword: React.FC = () => {
           variants={containerVariants}
         >
           <motion.div
-            className="absolute right-[-50px] top-[-50px] h-64 w-64 rounded-full bg-white opacity-20"
+            className="absolute right-[-50px] top-[-50px] size-64 rounded-full bg-white opacity-20"
             variants={circleVariants}
           ></motion.div>
 
           <motion.div
-            className="absolute bottom-[-50px] left-[-50px] h-64 w-64 -translate-x-1/2 translate-y-1/2 rounded-full bg-white opacity-20"
+            className="absolute bottom-[-50px] left-[-50px] size-64 -translate-x-1/2 translate-y-1/2 rounded-full bg-white opacity-20"
             variants={circleVariants}
           ></motion.div>
 

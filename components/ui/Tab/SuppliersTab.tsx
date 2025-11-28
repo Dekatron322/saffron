@@ -40,10 +40,10 @@ interface Order {
 const SkeletonLoader = () => {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex w-full items-start gap-4">
-      <div className="flex h-[calc(80vh-180px)] w-1/3 flex-col rounded-md bg-white p-4">
+      <div className="flex h-[calc(80vh-180px)] w-1/4 flex-col rounded-md bg-white p-4">
         <div className="flex h-10 items-center gap-2">
           <div className="h-10 w-full animate-pulse rounded-md bg-gray-200"></div>
-          <div className="h-10 w-10 animate-pulse rounded-md bg-gray-200"></div>
+          <div className="size-10 animate-pulse rounded-md bg-gray-200"></div>
         </div>
         <div className="mt-3">
           <div className="h-6 w-32 animate-pulse rounded-md bg-gray-200"></div>
@@ -65,7 +65,7 @@ const SkeletonLoader = () => {
       </div>
       <div className="flex w-2/3 animate-pulse flex-col rounded-md bg-white p-4">
         <div className="mb-6 space-y-4 border-b pb-4">
-          <div className="h-8 w-1/3 rounded bg-gray-200"></div>
+          <div className="h-8 w-1/4 rounded bg-gray-200"></div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <div className="h-4 w-1/4 rounded bg-gray-200"></div>
@@ -81,7 +81,7 @@ const SkeletonLoader = () => {
             </div>
           </div>
         </div>
-        <div className="h-6 w-1/3 rounded bg-gray-200"></div>
+        <div className="h-6 w-1/4 rounded bg-gray-200"></div>
         <div className="mt-4 space-y-4">
           <div className="h-10 w-full rounded bg-gray-200"></div>
           {[...Array(3)].map((_, i) => (
@@ -286,7 +286,7 @@ const SuppliersTab = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3 }}
-          className="flex h-[calc(80vh-180px)] w-1/3 flex-col rounded-md bg-white p-4"
+          className="flex h-[calc(80vh-180px)] w-1/4 flex-col rounded-md bg-white p-4"
         >
           <div className="flex h-10 items-center gap-2">
             <SearchModule

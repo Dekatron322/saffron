@@ -10,7 +10,7 @@ export default function Confirmed() {
   const [activeTab, setActiveTab] = useState("elite")
 
   return (
-    <section className="h-full w-full">
+    <section className="size-full">
       <div className="flex min-h-screen w-full">
         <div className="flex  w-full flex-col">
           <DashboardNav />

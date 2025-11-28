@@ -56,12 +56,10 @@ const AddCustomerModal: React.FC<PaymentSidebarProps> = ({ isOpen, onClose, onCu
     setIsLoading(true)
 
     try {
-      const response = await dispatch(createCustomer(formData))
+      const result: any = await dispatch(createCustomer(formData))
 
-      // Check if the request was rejected (thunkAPI.rejectWithValue)
-      if (response.meta.requestStatus === "rejected") {
-        const errorPayload = response.payload as ApiError
-        const errorMessage = errorPayload?.errorMessage || errorPayload?.message || "Failed to add customer"
+      if (result?.success === false) {
+        const errorMessage = result?.message || "Failed to add customer"
 
         notify("error", errorMessage, {
           title: "Error",
@@ -74,6 +72,14 @@ const AddCustomerModal: React.FC<PaymentSidebarProps> = ({ isOpen, onClose, onCu
       notify("success", "Customer added successfully!", {
         title: "Success",
         description: "The customer has been added to the system.",
+      })
+
+      setFormData({
+        customerName: "",
+        customerEmail: "",
+        customerPhone: "",
+        customerAddress: "",
+        customerPassword: "123456",
       })
 
       // Animate out before closing
@@ -146,7 +152,7 @@ const AddCustomerModal: React.FC<PaymentSidebarProps> = ({ isOpen, onClose, onCu
                       whileTap={{ scale: 0.95 }}
                     >
                       <span className="sr-only">Close panel</span>
-                      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </motion.button>
@@ -273,7 +279,7 @@ const AddCustomerModal: React.FC<PaymentSidebarProps> = ({ isOpen, onClose, onCu
                             animate={{ opacity: 1 }}
                           >
                             <svg
-                              className="mr-2 h-5 w-5 animate-spin"
+                              className="mr-2 size-5 animate-spin"
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
                               viewBox="0 0 24 24"

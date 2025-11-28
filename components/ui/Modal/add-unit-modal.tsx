@@ -8,7 +8,7 @@ import { FormInputModule } from "../Input/Input"
 import { useDispatch } from "react-redux"
 import { notify } from "../Notification/Notification"
 import { addUnit } from "app/api/store/unitSlice"
-import { motion } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 
 interface AddUnitModalProps {
   isOpen: boolean
@@ -196,7 +196,7 @@ const AddUnitModal: React.FC<AddUnitModalProps> = ({ isOpen, onClose }) => {
                   animate={{ opacity: 1 }}
                 >
                   <svg
-                    className="mr-2 h-5 w-5 animate-spin"
+                    className="mr-2 size-5 animate-spin"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"

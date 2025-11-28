@@ -955,7 +955,7 @@ const ReorderCreation = () => {
                         filteredSuppliers.map((supplier) => (
                           <motion.div
                             key={supplier.id}
-                            className={`cursor-pointer border-b p-3 hover:bg-gray-50 ${
+                            className={`mb-3 cursor-pointer rounded-md border p-3 hover:bg-gray-50 ${
                               selectedSupplier?.id === supplier.id ? "border-blue-200 bg-blue-50" : ""
                             }`}
                             onClick={() => handleSupplierSelect(supplier)}
@@ -1139,6 +1139,10 @@ const ReorderCreation = () => {
                     <div className="mb-4 rounded-lg bg-white p-4 shadow">
                       <div className="mb-4 flex items-center justify-between">
                         <h2 className="text-lg font-semibold">Reorder Products</h2>
+
+                        <ButtonModule variant="primary" size="md" onClick={addNewOrder}>
+                          <p className="max-sm:hidden">Add Product</p>
+                        </ButtonModule>
                       </div>
 
                       {selectedSupplier ? (
@@ -1566,6 +1570,16 @@ const ReorderCreation = () => {
                                       />
 
                                       <FormInputModule
+                                        label="Packaging Size"
+                                        type="number"
+                                        name="packagingSize"
+                                        placeholder="Enter packaging size"
+                                        value={order.productForm.packagingSize.toString()}
+                                        onChange={(e) => handleInputChange(e, index)}
+                                        className="w-full"
+                                      />
+
+                                      <FormInputModule
                                         label="Item Location"
                                         type="text"
                                         name="itemLocation"
@@ -1574,6 +1588,9 @@ const ReorderCreation = () => {
                                         onChange={(e) => handleInputChange(e, index)}
                                         className="w-full"
                                       />
+                                    </div>
+
+                                    <div className="grid grid-cols-4 gap-4">
                                       <FormInputModule
                                         label="Sale Price"
                                         type="number"
@@ -1583,10 +1600,7 @@ const ReorderCreation = () => {
                                         onChange={(e) => handleInputChange(e, index)}
                                         className="w-full"
                                       />
-                                    </div>
 
-                                    {/* Discount Type and Sale Discount Fields */}
-                                    <div className="grid grid-cols-4 gap-4">
                                       <div>
                                         <label className="mb-1 block text-sm font-medium">Discount Type</label>
                                         <DropdownPopoverModule
@@ -1613,6 +1627,7 @@ const ReorderCreation = () => {
                                           className="w-full"
                                         />
                                       </div>
+
                                       <FormInputModule
                                         label="Sale Discount"
                                         type="number"
@@ -1622,7 +1637,16 @@ const ReorderCreation = () => {
                                         onChange={(e) => handleInputChange(e, index)}
                                         className="w-full"
                                       />
-                                      <div className="col-span-2"></div> {/* Empty space for layout */}
+
+                                      <FormInputModule
+                                        label="Model No"
+                                        type="text"
+                                        name="modelNo"
+                                        placeholder="Enter model number"
+                                        value={order.productForm.modelNo}
+                                        onChange={(e) => handleInputChange(e, index)}
+                                        className="w-full"
+                                      />
                                     </div>
 
                                     <div className="flex items-center">

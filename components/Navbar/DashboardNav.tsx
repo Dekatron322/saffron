@@ -28,7 +28,7 @@ const DashboardNav = () => {
 
   return (
     <>
-      <nav className="containerbg hidden border-b px-8 py-4 max-sm:px-3 md:block">
+      <nav className="containerbg sticky top-0 z-40  hidden border-b px-8 py-4 max-sm:px-3 md:block">
         <div className="flexBetween">
           <SearchModule
             value={searchText}

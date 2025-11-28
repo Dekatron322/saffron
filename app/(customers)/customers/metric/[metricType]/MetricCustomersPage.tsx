@@ -43,9 +43,26 @@ export default function MetricCustomersPage({ metricType, title }: MetricCustome
       <div className="paddings  min-h-screen  py-8 ">
         <div className="mb-5 flex w-full justify-between">
           <div className="flex items-center gap-2">
-            <div onClick={handleBackClick}>
-              <ArrowBackIcon />
-            </div>
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="flex size-9 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+            >
+              <svg
+                width="1em"
+                height="1em"
+                viewBox="0 0 17 17"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="new-arrow-right rotate-180 transform"
+              >
+                <path
+                  d="M9.1497 0.80204C9.26529 3.95101 13.2299 6.51557 16.1451 8.0308L16.1447 9.43036C13.2285 10.7142 9.37889 13.1647 9.37789 16.1971L7.27855 16.1978C7.16304 12.8156 10.6627 10.4818 13.1122 9.66462L0.049716 9.43565L0.0504065 7.33631L13.1129 7.56528C10.5473 6.86634 6.93261 4.18504 7.05036 0.80273L9.1497 0.80204Z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </button>
+
             <h1 className="text-xl font-semibold">{title}</h1>
           </div>
         </div>

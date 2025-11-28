@@ -35,11 +35,11 @@ export const metadata: Metadata = {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <ProtectedRoute>
-      <div className="flex h-screen w-screen flex-col-reverse border-0 border-blue-700 lg:flex-row">
-        <div className="">
+      <div className="z-50 flex h-screen w-screen flex-col-reverse border-0 border-blue-700 lg:flex-row">
+        <div className="relative z-50 shrink-0">
           <SideBar />
         </div>
-        <div className="grow overflow-y-auto border-0 border-black ">{children}</div>
+        <div className="relative z-0 min-w-0 grow overflow-y-auto border-0 border-black ">{children}</div>
         <NotificationProvider position="top-center" />
       </div>
     </ProtectedRoute>

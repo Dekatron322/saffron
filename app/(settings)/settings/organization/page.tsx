@@ -245,7 +245,7 @@ const AddOrganisationModal: React.FC<OrganisationModalProps> = ({ isOpen, onClos
                       whileTap={{ scale: 0.95 }}
                     >
                       <span className="sr-only">Close panel</span>
-                      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </motion.button>
@@ -288,7 +288,7 @@ const AddOrganisationModal: React.FC<OrganisationModalProps> = ({ isOpen, onClos
                                   />
                                 </div>
                               ) : (
-                                <RiUploadCloud2Line className="mb-2 h-12 w-12 text-gray-400" />
+                                <RiUploadCloud2Line className="mb-2 size-12 text-gray-400" />
                               )}
                               <p className="text-center text-sm text-gray-600">
                                 {previewImage
@@ -478,7 +478,7 @@ const AddOrganisationModal: React.FC<OrganisationModalProps> = ({ isOpen, onClos
                             animate={{ opacity: 1 }}
                           >
                             <svg
-                              className="mr-2 h-5 w-5 animate-spin"
+                              className="mr-2 size-5 animate-spin"
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
                               viewBox="0 0 24 24"
@@ -580,7 +580,7 @@ export default function OrganizationsPage() {
               className="flex items-center gap-2"
               onClick={() => setIsModalOpen(true)}
             >
-              <RiBuilding2Fill className="h-5 w-5 text-white" />
+              <RiBuilding2Fill className="size-5 text-white" />
               Add Organization
             </ButtonModule>
           </div>
@@ -649,24 +649,24 @@ export default function OrganizationsPage() {
                 </div>
                 <div className="p-4">
                   <div className="flex  text-sm text-gray-600">
-                    <BiMap className="mr-2 h-4 w-4 shrink-0 text-gray-400" />
+                    <BiMap className="mr-2 size-4 shrink-0 text-gray-400" />
                     <p className="mb-4 line-clamp-2 text-sm text-gray-600">{org.address}</p>
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center text-sm text-gray-600">
-                      <BiBarcode className="mr-2 h-4 w-4 shrink-0 text-gray-400" />
+                      <BiBarcode className="mr-2 size-4 shrink-0 text-gray-400" />
                       <span className="truncate">GSTIN: {org.gstin}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
-                      <BiMapPin className="mr-2 h-4 w-4 shrink-0 text-gray-400" />
+                      <BiMapPin className="mr-2 size-4 shrink-0 text-gray-400" />
                       <span className="truncate">CIN: {org.cin}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
-                      <BiMailSend className="mr-2 h-4 w-4 shrink-0 text-gray-400" />
+                      <BiMailSend className="mr-2 size-4 shrink-0 text-gray-400" />
                       <span className="truncate">Email: {org.emailId}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
-                      <BiPhone className="mr-2 h-4 w-4 shrink-0 text-gray-400" />
+                      <BiPhone className="mr-2 size-4 shrink-0 text-gray-400" />
                       <span className="truncate">Phone: {org.phoneNumber}</span>
                     </div>
                   </div>

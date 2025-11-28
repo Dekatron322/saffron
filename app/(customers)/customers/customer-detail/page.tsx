@@ -35,7 +35,7 @@ export default function Dashboard() {
   const router = useRouter()
 
   return (
-    <section className="h-full w-full">
+    <section className="size-full">
       <div className="flex min-h-screen w-full">
         <div className="flex  w-full flex-col">
           <DashboardNav />

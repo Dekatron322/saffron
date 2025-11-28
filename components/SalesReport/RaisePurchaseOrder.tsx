@@ -210,7 +210,7 @@ const RaisePurchaseOrder = () => {
         defaultMRP: 0,
         salePrice: 0,
         purchasePrice: 0,
-        discountType: "Percentage",
+        discountType: "",
         saleDiscount: 0,
         openingStockQuantity: 0,
         minimumStockQuantity: 0,
@@ -224,7 +224,7 @@ const RaisePurchaseOrder = () => {
         expDate: "",
         mrp: 0,
         hsn: 0,
-        reorderQuantity: 0,
+        reorderQuantity: 1,
         currentStockLevel: 0,
         reorderThreshold: 0,
         packagingSize: 1,
@@ -299,13 +299,15 @@ const RaisePurchaseOrder = () => {
 
       if (discountLevel === "product") {
         // Use product-level discount
-        const discountType = order.productForm.discountType || "Percentage"
+        const discountType = order.productForm.discountType || ""
         const discountValue = order.productForm.saleDiscount || 0
 
         if (discountType === "Percentage") {
           itemDiscountAmount = itemSubtotal * (discountValue / 100)
-        } else {
+        } else if (discountType === "Amount") {
           itemDiscountAmount = discountValue // Fixed amount, not multiplied by quantity
+        } else {
+          itemDiscountAmount = 0 // No discount when type not selected
         }
       }
 
@@ -326,7 +328,7 @@ const RaisePurchaseOrder = () => {
         quantity,
         purchasePrice,
         taxRate,
-        discountType: discountLevel === "product" ? order.productForm.discountType || "Percentage" : "None",
+        discountType: discountLevel === "product" ? order.productForm.discountType || "None" : "None",
         discountValue: discountLevel === "product" ? order.productForm.saleDiscount || 0 : 0,
         discountAmount: itemDiscountAmount,
         subtotal: itemSubtotal,
@@ -347,18 +349,19 @@ const RaisePurchaseOrder = () => {
         paymentDiscountAmount = paymentDiscount.discountValue
       }
 
-      // Calculate tax on the discounted amount
-      const taxableAmountAfterDiscount = subtotal - paymentDiscountAmount
-      const taxAmountAfterDiscount = taxableAmountAfterDiscount * (taxAmount / subtotal)
-
+      // Keep your tax as-is (displayed breakdown tax). Only compute final from displayed parts.
       totalDiscountAmount = paymentDiscountAmount
-      totalWithTax = taxableAmountAfterDiscount + taxAmountAfterDiscount
+      totalWithTax = Number((subtotal - paymentDiscountAmount + taxAmount).toFixed(2))
     }
+
+    // Final total must match the displayed breakdown: round2(Subtotal) - round2(Discount) + round2(Tax)
+    const r2 = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100
+    const finalTotalWithTax = r2(r2(subtotal) - r2(totalDiscountAmount) + r2(taxAmount))
 
     setCalculationBreakdown({
       subtotal,
       taxAmount,
-      totalWithTax,
+      totalWithTax: finalTotalWithTax,
       discountAmount: totalDiscountAmount,
       itemBreakdown,
     })
@@ -366,8 +369,8 @@ const RaisePurchaseOrder = () => {
     setPaymentInfo((prev) => ({
       ...prev,
       totalAmount: subtotal.toFixed(2),
-      totalAmountWithTax: totalWithTax.toFixed(2),
-      paidAmount: totalWithTax.toFixed(2),
+      totalAmountWithTax: finalTotalWithTax.toFixed(2),
+      paidAmount: finalTotalWithTax.toFixed(2),
     }))
   }
 
@@ -408,7 +411,7 @@ const RaisePurchaseOrder = () => {
           defaultMRP: product.defaultMRP || 0,
           salePrice: product.salePrice || 0,
           purchasePrice: product.purchasePrice || 0,
-          discountType: product.discountType || "Percentage",
+          discountType: product.discountType || "",
           saleDiscount: product.saleDiscount || 0,
           taxRate: product.taxRate || 0,
           mrp: product.mrp || 0,
@@ -485,9 +488,14 @@ const RaisePurchaseOrder = () => {
           },
         }
       } else if (name === "quantity") {
+        const parsedQty = parseInt(value) || 1
         updatedOrders[index] = {
           ...currentOrder,
-          quantity: parseInt(value) || 1,
+          quantity: parsedQty,
+          productForm: {
+            ...currentForm,
+            reorderQuantity: parsedQty,
+          },
         }
       } else {
         updatedOrders[index] = {
@@ -548,7 +556,7 @@ const RaisePurchaseOrder = () => {
           defaultMRP: 0,
           salePrice: 0,
           purchasePrice: 0,
-          discountType: "Percentage",
+          discountType: "",
           saleDiscount: 0,
           openingStockQuantity: 0,
           minimumStockQuantity: 0,
@@ -562,7 +570,7 @@ const RaisePurchaseOrder = () => {
           expDate: "",
           mrp: 0,
           hsn: 0,
-          reorderQuantity: 0,
+          reorderQuantity: 1,
           currentStockLevel: 0,
           reorderThreshold: 0,
           packagingSize: 1,
@@ -649,13 +657,14 @@ const RaisePurchaseOrder = () => {
           openingStockQuantity: order.quantity || 1,
           modelNo: order.productForm.modelNo ? parseInt(order.productForm.modelNo) || 0 : 0,
           // Include product-level discount if applicable
-          ...(discountLevel === "product" && {
-            discount: {
-              discountType: order.productForm.discountType,
-              discountValue: order.productForm.saleDiscount,
-              discountedAmount: 0, // This will be calculated on the server
-            },
-          }),
+          ...(discountLevel === "product" &&
+            order.productForm.discountType && {
+              discount: {
+                discountType: order.productForm.discountType,
+                discountValue: order.productForm.saleDiscount,
+                discountedAmount: 0, // This will be calculated on the server
+              },
+            }),
         })),
       }
 
@@ -687,7 +696,7 @@ const RaisePurchaseOrder = () => {
             defaultMRP: 0,
             salePrice: 0,
             purchasePrice: 0,
-            discountType: "Percentage",
+            discountType: "",
             saleDiscount: 0,
             openingStockQuantity: 0,
             minimumStockQuantity: 0,
@@ -830,7 +839,7 @@ const RaisePurchaseOrder = () => {
                   Raise Purchase Order
                 </motion.h1>
 
-                {/* {error && (
+                {error && (
                   <motion.div
                     className="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700"
                     initial={{ opacity: 0, y: -10 }}
@@ -850,7 +859,7 @@ const RaisePurchaseOrder = () => {
                   >
                     {success}
                   </motion.div>
-                )} */}
+                )}
 
                 <motion.div
                   className="flex w-full items-start gap-6"
@@ -878,7 +887,7 @@ const RaisePurchaseOrder = () => {
                         filteredSuppliers.map((supplier) => (
                           <motion.div
                             key={supplier.id}
-                            className={`cursor-pointer border-b p-3 hover:bg-gray-50 ${
+                            className={`mb-3 cursor-pointer rounded-md border p-3 hover:bg-gray-50 ${
                               selectedSupplier?.id === supplier.id ? "border-blue-200 bg-blue-50" : ""
                             }`}
                             onClick={() => handleSupplierSelect(supplier)}
@@ -943,11 +952,12 @@ const RaisePurchaseOrder = () => {
                               <DropdownPopoverModule
                                 label=""
                                 options={[
+                                  { value: "", label: "Select Discount Type" }, // Add empty option
                                   { value: "Percentage", label: "Percentage" },
                                   { value: "Amount", label: "Amount" },
                                 ]}
                                 placeholder="Select Discount Type"
-                                value={paymentInfo.discount?.discountType || "Percentage"}
+                                value={paymentInfo.discount?.discountType || ""} // Handle empty value
                                 onChange={(value) => handlePaymentDiscountChange("discountType", value)}
                                 className="w-full"
                               />
@@ -1129,7 +1139,7 @@ const RaisePurchaseOrder = () => {
                   </motion.div>
 
                   {/* Product Selection and Form */}
-                  <motion.div className="w-3/4" variants={itemVariants}>
+                  <motion.div className=" w-3/4" variants={itemVariants}>
                     <div className="mb-4 rounded-lg bg-white p-4 shadow">
                       <div className="mb-4 flex items-center justify-between">
                         <h2 className="text-lg font-semibold">Purchase Orders</h2>
@@ -1168,7 +1178,7 @@ const RaisePurchaseOrder = () => {
                         const quantity = order.quantity || 1
                         const purchasePrice = order.productForm.purchasePrice || 0
                         const taxRate = order.productForm.taxRate || 0
-                        const discountType = order.productForm.discountType || "Percentage"
+                        const discountType = order.productForm.discountType || ""
                         const discountValue = order.productForm.saleDiscount || 0
 
                         // Calculate item subtotal
@@ -1179,8 +1189,10 @@ const RaisePurchaseOrder = () => {
                         if (discountLevel === "product") {
                           if (discountType === "Percentage") {
                             itemDiscountAmount = itemSubtotal * (discountValue / 100)
-                          } else {
+                          } else if (discountType === "Amount") {
                             itemDiscountAmount = discountValue * quantity
+                          } else {
+                            itemDiscountAmount = 0
                           }
                         }
 
@@ -1214,7 +1226,7 @@ const RaisePurchaseOrder = () => {
                                   {order.isMinimized ? (
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
-                                      className="h-5 w-5"
+                                      className="size-5"
                                       viewBox="0 0 20 20"
                                       fill="currentColor"
                                     >
@@ -1227,7 +1239,7 @@ const RaisePurchaseOrder = () => {
                                   ) : (
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
-                                      className="h-5 w-5"
+                                      className="size-5"
                                       viewBox="0 0 20 20"
                                       fill="CurrentColor"
                                     >
@@ -1249,7 +1261,7 @@ const RaisePurchaseOrder = () => {
                                   >
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
-                                      className="h-5 w-5"
+                                      className="size-5"
                                       viewBox="0 0 20 20"
                                       fill="currentColor"
                                     >
@@ -1281,7 +1293,11 @@ const RaisePurchaseOrder = () => {
                                 {discountLevel === "product" && (
                                   <div>
                                     <span className="font-medium">Discount:</span>{" "}
-                                    {discountType === "Percentage" ? `${discountValue}%` : `₹${discountValue}`}
+                                    {discountType === "Percentage"
+                                      ? `${discountValue}%`
+                                      : discountType === "Amount"
+                                      ? `₹${discountValue}`
+                                      : "None"}
                                   </div>
                                 )}
                                 <div>
@@ -1302,10 +1318,61 @@ const RaisePurchaseOrder = () => {
                                     <label className="mb-2 block text-sm font-medium">Select Product (Optional)</label>
                                     <DropdownPopoverModule
                                       label=""
-                                      options={products.map((product) => ({
-                                        value: product.productId.toString(),
-                                        label: product.productName,
-                                      }))}
+                                      options={products.map((product) => {
+                                        // Find the unit for this product
+                                        const productUnit = units.find((unit) => unit.unitId === product.unitId)
+                                        const baseUnit = productUnit?.baseUnit || "PCS"
+                                        const secondaryUnit = productUnit?.secondaryUnit || ""
+
+                                        // Create plain string label with stock information (used for search)
+                                        let label = product.productName
+
+                                        const hasUnitsAvailable =
+                                          product.unitsAvailable !== undefined && product.unitsAvailable !== null
+                                        const hasSubUnitsPerUnit =
+                                          product.subUnitsPerUnit !== undefined && product.subUnitsPerUnit !== null
+
+                                        if (hasUnitsAvailable || hasSubUnitsPerUnit) {
+                                          label += ` (`
+                                          if (hasUnitsAvailable) {
+                                            label += `Units: ${product.unitsAvailable} ${baseUnit}`
+                                          }
+                                          if (hasSubUnitsPerUnit) {
+                                            label += ` | Sub Units per Unit: ${product.subUnitsPerUnit}`
+                                          }
+                                          label += `)`
+                                        }
+
+                                        // Create JSX label so units and sub-units can be styled
+                                        const nodeLabel = (
+                                          <span>
+                                            <span>{product.productName}</span>
+                                            {(hasUnitsAvailable || hasSubUnitsPerUnit) && (
+                                              <span className="ml-1 text-xs text-gray-600">
+                                                (
+                                                {hasUnitsAvailable && (
+                                                  <span className="text-blue-600">
+                                                    Units: {product.unitsAvailable} {baseUnit}
+                                                  </span>
+                                                )}
+                                                {hasUnitsAvailable && hasSubUnitsPerUnit && <span> | </span>}
+                                                {hasSubUnitsPerUnit && (
+                                                  <span className="text-emerald-600">
+                                                    Sub Units per Unit: {product.subUnitsPerUnit}
+                                                  </span>
+                                                )}
+                                                )
+                                              </span>
+                                            )}
+                                          </span>
+                                        )
+
+                                        return {
+                                          value: product.productId.toString(),
+                                          label: label,
+                                          nodeLabel: nodeLabel,
+                                        }
+                                      })}
                                       placeholder="Select a product to auto-fill details"
                                       value={
                                         products
@@ -1318,6 +1385,9 @@ const RaisePurchaseOrder = () => {
                                         if (product) handleProductSelect(product, index)
                                       }}
                                     />
+                                    <div className="mt-1 text-xs text-gray-500">
+                                      Products show available units and sub-units conversion where applicable
+                                    </div>
                                   </div>
 
                                   {/* Product Form */}
@@ -1542,6 +1612,16 @@ const RaisePurchaseOrder = () => {
                                       />
 
                                       <FormInputModule
+                                        label="Packaging Size"
+                                        type="number"
+                                        name="packagingSize"
+                                        placeholder="Enter packaging size"
+                                        value={order.productForm.packagingSize.toString()}
+                                        onChange={(e) => handleInputChange(e, index)}
+                                        className="w-full"
+                                      />
+
+                                      <FormInputModule
                                         label="Item Location"
                                         type="text"
                                         name="itemLocation"
@@ -1550,6 +1630,9 @@ const RaisePurchaseOrder = () => {
                                         onChange={(e) => handleInputChange(e, index)}
                                         className="w-full"
                                       />
+                                    </div>
+
+                                    <div className="grid grid-cols-4 gap-4">
                                       <FormInputModule
                                         label="Sale Price"
                                         type="number"
@@ -1559,6 +1642,16 @@ const RaisePurchaseOrder = () => {
                                         onChange={(e) => handleInputChange(e, index)}
                                         className="w-full"
                                       />
+                                      <FormInputModule
+                                        label="Model No"
+                                        type="text"
+                                        name="modelNo"
+                                        placeholder="Enter model number"
+                                        value={order.productForm.modelNo}
+                                        onChange={(e) => handleInputChange(e, index)}
+                                        className="w-full"
+                                      />
+                                      <div className="col-span-2"></div> {/* Empty space for layout */}
                                     </div>
 
                                     {/* Product-level Discount Fields (only show when product-level discount is selected) */}
@@ -1569,11 +1662,12 @@ const RaisePurchaseOrder = () => {
                                           <DropdownPopoverModule
                                             label=""
                                             options={[
+                                              { value: "", label: "Select Discount Type" }, // Add empty option
                                               { value: "Percentage", label: "Percentage" },
                                               { value: "Amount", label: "Amount" },
                                             ]}
                                             placeholder="Select Discount Type"
-                                            value={order.productForm.discountType}
+                                            value={order.productForm.discountType || ""} // Handle empty value
                                             onChange={(value) => {
                                               setPurchaseOrders((prevOrders) => {
                                                 const updatedOrders = prevOrders.map(createOrderCopy)

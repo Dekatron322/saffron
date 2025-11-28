@@ -177,10 +177,10 @@ const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({ isOpen, cus
         <div className="flex items-center justify-between border-b p-4">
           <div className="flex items-center gap-3">
             {loading ? (
-              <div className="h-12 w-12 animate-pulse rounded-full bg-gray-200" />
+              <div className="size-12 animate-pulse rounded-full bg-gray-200" />
             ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
-                <RxAvatar className="h-6 w-6 text-gray-500" />
+              <div className="flex size-12 items-center justify-center rounded-full bg-gray-100">
+                <RxAvatar className="size-6 text-gray-500" />
               </div>
             )}
             <div>
@@ -251,10 +251,10 @@ const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({ isOpen, cus
                 <div className="space-y-3">
                   {[1, 2, 3].map((item) => (
                     <div key={item} className="flex items-center gap-3">
-                      <div className="h-5 w-5 animate-pulse rounded-full bg-gray-200" />
+                      <div className="size-5 animate-pulse rounded-full bg-gray-200" />
                       <div>
                         <div className="h-3 w-16 animate-pulse rounded bg-gray-200" />
-                        <div className="mt-1 h-4 w-40 animate-pulse rounded bg-gray-200" />
+                        <div className="mt-1 size-40 animate-pulse rounded bg-gray-200" />
                       </div>
                     </div>
                   ))}
@@ -266,7 +266,7 @@ const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({ isOpen, cus
                 {[1, 2].map((item) => (
                   <div key={item} className="rounded-lg border bg-gray-50 p-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-5 w-5 animate-pulse rounded-full bg-gray-200" />
+                      <div className="size-5 animate-pulse rounded-full bg-gray-200" />
                       <div>
                         <div className="h-3 w-24 animate-pulse rounded bg-gray-200" />
                         <div className="mt-1 h-4 w-16 animate-pulse rounded bg-gray-200" />
@@ -304,7 +304,7 @@ const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({ isOpen, cus
                       className="flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium"
                     >
                       <span
-                        className={`h-2 w-2 rounded-full ${
+                        className={`size-2 rounded-full ${
                           currentCustomer.status === "Y" ? "bg-green-500" : "bg-red-500"
                         }`}
                       ></span>
@@ -323,7 +323,7 @@ const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({ isOpen, cus
                     <h3 className="mb-3 text-sm font-semibold text-gray-700">Contact Information</h3>
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
-                        <FiMail className="h-5 w-5 text-gray-400" />
+                        <FiMail className="size-5 text-gray-400" />
                         <div>
                           <p className="text-xs text-gray-500">Email</p>
                           <p className="text-sm font-medium text-gray-800">
@@ -332,7 +332,7 @@ const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({ isOpen, cus
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <FiPhone className="h-5 w-5 text-gray-400" />
+                        <FiPhone className="size-5 text-gray-400" />
                         <div>
                           <p className="text-xs text-gray-500">Phone</p>
                           <p className="text-sm font-medium text-gray-800">
@@ -341,7 +341,7 @@ const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({ isOpen, cus
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <FiMapPin className="h-5 w-5 text-gray-400" />
+                        <FiMapPin className="size-5 text-gray-400" />
                         <div>
                           <p className="text-xs text-gray-500">Address</p>
                           <p className="text-sm font-medium text-gray-800">
@@ -356,7 +356,7 @@ const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({ isOpen, cus
                   <div className="grid grid-cols-2 gap-4">
                     <div className="rounded-lg border bg-gray-50 p-4">
                       <div className="flex items-center gap-3">
-                        <TbCoin className="h-5 w-5 text-gray-400" />
+                        <TbCoin className="size-5 text-gray-400" />
                         <div>
                           <p className="text-xs text-gray-500">Loyalty Points</p>
                           <p className="text-sm font-medium text-gray-800">
@@ -367,7 +367,7 @@ const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({ isOpen, cus
                     </div>
                     <div className="rounded-lg border bg-gray-50 p-4">
                       <div className="flex items-center gap-3">
-                        <FiCreditCard className="h-5 w-5 text-gray-400" />
+                        <FiCreditCard className="size-5 text-gray-400" />
                         <div>
                           <p className="text-xs text-gray-500">GSTIN</p>
                           <p className="text-sm font-medium text-gray-800">
@@ -415,7 +415,7 @@ const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({ isOpen, cus
                             <div className="h-5 w-32 rounded bg-gray-200"></div>
                             <div className="h-5 w-20 rounded bg-gray-200"></div>
                           </div>
-                          <div className="mt-3 h-4 w-48 rounded bg-gray-200"></div>
+                          <div className="mt-3 size-48 rounded bg-gray-200"></div>
                           <div className="mt-2 flex items-center gap-2">
                             <div className="h-4 w-16 rounded bg-gray-200"></div>
                             <div className="h-4 w-24 rounded bg-gray-200"></div>

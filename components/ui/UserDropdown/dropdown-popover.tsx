@@ -15,6 +15,7 @@ import LogoutIcon from "public/logout-icon"
 import LogoutModal from "../Modal/logout-modal"
 import { AppDispatch, RootState } from "app/api/store/store"
 import { logout } from "app/api/store/authSlice"
+import LoyaltyConversion from "public/loyalty-conversion"
 
 // Set the app element for accessibility
 if (typeof window !== "undefined") {
@@ -146,6 +147,15 @@ const UserDropdown = () => {
                   <SupportIcon /> Organization
                 </a>
                 <EditIcon />
+              </li>
+              <li>
+                <a
+                  href="/settings/loyalty-conversion"
+                  className="text-grey-400 flex gap-2 px-4 py-2 text-sm font-medium hover:bg-gray-100"
+                  onClick={() => setOpen(false)}
+                >
+                  <LoyaltyConversion /> Loyalty Conversion
+                </a>
               </li>
               <li>
                 <a

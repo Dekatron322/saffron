@@ -8,9 +8,7 @@ import IncomingIcon from "public/incoming-icon"
 import { ButtonModule } from "components/ui/Button/Button"
 import ExportIcon from "public/export-icon"
 import { SearchModule } from "components/ui/Search/search-module"
-import { getBankLogo } from "components/ui/BanksLogo/bank-logo"
 import EmptyState from "public/empty-state"
-import DeleteModal from "components/ui/Modal/delete-modal"
 
 type SortOrder = "asc" | "desc" | null
 type Order = {

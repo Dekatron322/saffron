@@ -242,7 +242,7 @@ export default function Banks() {
   }
 
   return (
-    <section className="h-full w-full">
+    <section className="size-full">
       <div className="flex min-h-screen w-full">
         <div className="flex w-full flex-col">
           <DashboardNav />
@@ -286,8 +286,8 @@ export default function Banks() {
                     {banksData.map((bank) => (
                       <div key={bank.id} className="relative rounded-lg bg-white p-4 shadow-lg">
                         <div className="flex gap-4">
-                          <div className="relative h-[46px] w-[46px]">
-                            <div className="text-grey-600 flex h-[44px] w-[44px] items-center justify-center rounded-md bg-[#F5F8FA] font-medium">
+                          <div className="relative size-[46px]">
+                            <div className="text-grey-600 flex size-[44px] items-center justify-center rounded-md bg-[#F5F8FA] font-medium">
                               <Image src={bank.logo} alt={bank.name} width={60} height={60} />
                             </div>
                           </div>

@@ -85,10 +85,10 @@ const ResetPin: React.FC = () => {
   const isButtonDisabled = loading || pin.some((digit) => digit === "")
 
   return (
-    <section className="relative flex h-auto w-full flex-grow overflow-auto bg-[#FFFFFF]">
+    <section className="relative flex h-auto w-full grow overflow-auto bg-[#FFFFFF]">
       <div className="grid h-screen w-full items-center md:grid-cols-2">
         {/* Centered login form container */}
-        <div className="flex h-full w-full items-center justify-center">
+        <div className="flex size-full items-center justify-center">
           <div className="flex h-auto items-center justify-center rounded-lg max-sm:w-[95%] md:w-[500px] md:bg-[#FFFFFF] 2xl:w-[550px]">
             <div className="w-full justify-center max-sm:p-4">
               <div className="mb-4 flex flex-col items-center  pb-5">
@@ -129,7 +129,7 @@ const ResetPin: React.FC = () => {
                   {loading ? (
                     <div className="flex items-center justify-center">
                       <svg
-                        className="mr-2 h-5 w-5 animate-spin"
+                        className="mr-2 size-5 animate-spin"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -165,10 +165,10 @@ const ResetPin: React.FC = () => {
         </div>
         <div className="relative mb-4 flex h-screen flex-col items-center justify-center gap-2 overflow-hidden bg-[#00a4a6] max-sm:hidden">
           {/* Top Circle */}
-          <div className="absolute right-[-50px] top-[-50px] h-64 w-64 rounded-full bg-white opacity-20"></div>
+          <div className="absolute right-[-50px] top-[-50px] size-64 rounded-full bg-white opacity-20"></div>
 
           {/* Bottom Circle */}
-          <div className="absolute bottom-0 left-0 h-64 w-64 -translate-x-1/2 translate-y-1/2 rounded-full bg-white opacity-20"></div>
+          <div className="absolute bottom-0 left-0 size-64 -translate-x-1/2 translate-y-1/2 rounded-full bg-white opacity-20"></div>
 
           {/* Left Triangle */}
 

@@ -164,13 +164,13 @@ const PurchaseMenu = () => {
         {[1, 2, 3, 4].map((item) => (
           <div key={item} className="small-card rounded-md p-2 transition duration-500 md:border">
             <div className="flex items-center gap-2 max-sm:mb-2">
-              <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200"></div>
+              <div className="size-8 animate-pulse rounded-full bg-gray-200"></div>
               <div className="w-full">
                 <div className="mb-2 h-4 w-32 animate-pulse rounded bg-gray-200 max-xl:text-sm"></div>
                 <div className="flex w-full justify-between max-xl:text-sm">
                   <div className="h-6 w-16 animate-pulse rounded bg-gray-200"></div>
                   <div className="flex items-center gap-1">
-                    <div className="h-4 w-4 animate-pulse rounded bg-gray-200"></div>
+                    <div className="size-4 animate-pulse rounded bg-gray-200"></div>
                     <div className="h-4 w-12 animate-pulse rounded bg-gray-200"></div>
                   </div>
                 </div>

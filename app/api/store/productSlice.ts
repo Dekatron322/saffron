@@ -77,6 +77,8 @@ interface Product {
   linkPayment: boolean
   deductibleWalletAmount: number | null
   batchDetails: BatchDetail
+  unitsAvailable?: number
+  subUnitsPerUnit?: number
 }
 
 interface ProductResponse {
@@ -163,6 +165,142 @@ interface CreateProductPayload {
   discount?: ProductDiscount // Added discount field
 }
 
+// Interface for Product Transaction
+interface ProductTransaction {
+  invoiceDate: string
+  productName: string
+  supplier: string | null
+  type: string
+  quantity: number
+  pricePerUnit: number
+  totalPrice: number
+  unit: string
+  customer: string | null
+  status: string
+  loyaltyPointDiscount: number | null
+  invoiceNo: number
+  historyId: number | null
+}
+
+// Interface for Product Transactions Response
+interface ProductTransactionsResponse {
+  salePrice: number
+  purchasePrice: number
+  transactionSummary: ProductTransaction[]
+  stockQuantity: number
+  availableUnit: number
+  currentPage: number
+  totalPages: number
+  totalElements: number
+  pageSize: number
+  lastPage: boolean
+}
+
+// Interface for Product Transactions Request
+interface ProductTransactionsRequest {
+  name: string
+  page?: number
+  size?: number
+  sortBy?: string
+  sortDir?: string
+}
+
+// Interface for Purchase Order Item
+export interface PurchaseOrderItem {
+  purchaseOrderItemId: number
+  purchaseOrderId: number
+  productId: number | null
+  stagedProductId: number
+  quantity: number
+  unitPrice: number
+  itemDetails: {
+    productName: string
+    purchasePrice: number
+    supplierId: number
+    taxRate: number
+    unitId: number
+    paidAmount: number
+    salePrice: number
+    reorderQuantity: number
+    mrp: number
+    mfgDate: string
+    manufacturer: string
+    hsn: string
+    expDate: string
+    description: string
+    batchNo: string
+    branchId: number
+  }
+}
+
+// Interface for Transaction Details
+export interface TransactionDetails {
+  // Common / purchase-order fields
+  purchaseOrderId?: number
+  supplierId?: number
+  orderDate?: string
+  expectedDeliveryDate?: string
+  totalAmount?: number
+  raised?: boolean
+  purchaseOrderItems?: PurchaseOrderItem[]
+  paymentStatus?: string
+  paymentCategory?: string
+  type: string | null
+  status?: string
+  paidAmount?: number | null
+  linkPayment?: boolean
+  deductibleWalletAmount?: number | null
+  discount?: number
+  orderStatus?: string
+
+  // Sale-order specific fields (used in TransactionDetailsModal)
+  customerId?: number | string
+  paymentStatusId?: number
+  paymentTypeId?: number
+  returnStatus?: string
+  placeOfSupply?: string
+  promoCode?: string
+  loyaltyPointDiscount?: number | null
+  subscriptionDiscount?: number | null
+
+  // Sale order items
+  saleOrderItems?: {
+    saleOrderItemId: number
+    itemName: string
+    hsnCode: string
+    description: string
+    batchNo: string
+    mfg: string
+    expDate: string
+    mfgDate: string
+    mrp: number
+    packing: string
+    quantity: number
+    pricePerUnit: number
+    tax: number
+    saleOrderId: string | null
+    statusOfItem: string | null
+    defectQuantity: number | null
+    unitName: string
+    unitSold: number
+    totalRevenue: number | null
+    discountType: string | null
+    discountValue: number
+  }[]
+}
+
+// Interface for Transaction Details Response
+export interface TransactionDetailsResponse {
+  transaction: TransactionDetails
+  orderType: string
+}
+
+// Interface for Transaction Details Request
+interface TransactionDetailsRequest {
+  type: string
+  invoiceNo: number
+}
+
 interface ProductState {
   products: Product[]
   loading: boolean
@@ -192,6 +330,14 @@ interface ProductState {
   createProductError: string | null
   createdProduct: Product | null
   productSuccess: boolean
+  // New state for product transactions
+  productTransactions: ProductTransactionsResponse | null
+  productTransactionsLoading: boolean
+  productTransactionsError: string | null
+  // New state for transaction details
+  transactionDetails: TransactionDetailsResponse | null
+  transactionDetailsLoading: boolean
+  transactionDetailsError: string | null
 }
 
 const initialState: ProductState = {
@@ -223,6 +369,14 @@ const initialState: ProductState = {
   createProductError: null,
   createdProduct: null,
   productSuccess: false,
+  // Initialize product transactions state
+  productTransactions: null,
+  productTransactionsLoading: false,
+  productTransactionsError: null,
+  // Initialize transaction details state
+  transactionDetails: null,
+  transactionDetailsLoading: false,
+  transactionDetailsError: null,
 }
 
 const productSlice = createSlice({
@@ -360,6 +514,42 @@ const productSlice = createSlice({
       state.createdProduct = null
       state.productSuccess = false
     },
+    // New reducers for product transactions
+    fetchProductTransactionsStart(state) {
+      state.productTransactionsLoading = true
+      state.productTransactionsError = null
+    },
+    fetchProductTransactionsSuccess(state, action: PayloadAction<ProductTransactionsResponse>) {
+      state.productTransactions = action.payload
+      state.productTransactionsLoading = false
+      state.productTransactionsError = null
+    },
+    fetchProductTransactionsFailure(state, action: PayloadAction<string>) {
+      state.productTransactionsLoading = false
+      state.productTransactionsError = action.payload
+    },
+    clearProductTransactions(state) {
+      state.productTransactions = null
+      state.productTransactionsError = null
+    },
+    // New reducers for transaction details
+    fetchTransactionDetailsStart(state) {
+      state.transactionDetailsLoading = true
+      state.transactionDetailsError = null
+    },
+    fetchTransactionDetailsSuccess(state, action: PayloadAction<TransactionDetailsResponse>) {
+      state.transactionDetails = action.payload
+      state.transactionDetailsLoading = false
+      state.transactionDetailsError = null
+    },
+    fetchTransactionDetailsFailure(state, action: PayloadAction<string>) {
+      state.transactionDetailsLoading = false
+      state.transactionDetailsError = action.payload
+    },
+    clearTransactionDetails(state) {
+      state.transactionDetails = null
+      state.transactionDetailsError = null
+    },
   },
 })
 
@@ -391,6 +581,16 @@ export const {
   createProductSuccess,
   createProductFailure,
   clearCreatedProduct,
+  // Export new actions
+  fetchProductTransactionsStart,
+  fetchProductTransactionsSuccess,
+  fetchProductTransactionsFailure,
+  clearProductTransactions,
+  // Export transaction details actions
+  fetchTransactionDetailsStart,
+  fetchTransactionDetailsSuccess,
+  fetchTransactionDetailsFailure,
+  clearTransactionDetails,
 } = productSlice.actions
 
 export const fetchAllProducts =
@@ -424,16 +624,18 @@ export const fetchAllProducts =
         throw new Error("Invalid response format from server")
       }
 
-      dispatch(
-        fetchProductsSuccess({
-          products: response.data.products,
-          currentPage: response.data.pageNo || page,
-          totalPages: response.data.totalPages || 1,
-          totalElements: response.data.totalElements || response.data.products.length,
-          pageSize: response.data.pageSize || pageSize,
-          lastPage: response.data.lastPage || false,
-        })
-      )
+      const payload = {
+        products: response.data.products,
+        currentPage: response.data.pageNo || page,
+        totalPages: response.data.totalPages || 1,
+        totalElements: response.data.totalElements || response.data.products.length,
+        pageSize: response.data.pageSize || pageSize,
+        lastPage: response.data.lastPage || false,
+      }
+
+      dispatch(fetchProductsSuccess(payload))
+
+      return payload
     } catch (error: any) {
       let errorMessage = "Failed to fetch products"
       if (error.response?.data) {
@@ -771,6 +973,121 @@ export const createManualPurchaseOrder = (purchaseOrderData: any) => async (disp
   }
 }
 
+// New function to fetch product transactions
+export const fetchProductTransactions = (requestData: ProductTransactionsRequest) => async (dispatch: AppDispatch) => {
+  try {
+    dispatch(fetchProductTransactionsStart())
+    const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken")
+    if (!token) throw new Error("No authentication token found")
+
+    const requestBody = {
+      name: requestData.name,
+      page: requestData.page || 0,
+      size: requestData.size || 5,
+      sortBy: requestData.sortBy || "invoiceDate",
+      sortDir: requestData.sortDir || "asc",
+    }
+
+    const response = await axios.post(
+      `${API_CONFIG.BASE_URL}/inventory-service/api/v1/histories/product`,
+      requestBody,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    )
+
+    // Assuming the API returns the data directly in the response structure shown
+    if (response.data && response.data.transactionSummary) {
+      dispatch(fetchProductTransactionsSuccess(response.data))
+      return response.data
+    }
+
+    // If the API wraps the response in a success/data structure
+    if (response.data.success === true && response.data.data) {
+      dispatch(fetchProductTransactionsSuccess(response.data.data))
+      return response.data.data
+    }
+
+    if (response.data.success === false) {
+      throw new Error(response.data.message || response.data.errorMessage || "Failed to fetch product transactions")
+    }
+
+    throw new Error("Invalid response format from server")
+  } catch (error: any) {
+    let errorMessage = "Failed to fetch product transactions"
+
+    if (error.response?.data) {
+      const apiError = error.response.data
+      errorMessage = apiError.message || apiError.errorMessage || "API request failed"
+    } else if (error.message) {
+      errorMessage = error.message
+    }
+
+    console.error("Product transactions fetch error:", errorMessage)
+    dispatch(fetchProductTransactionsFailure(errorMessage))
+    throw errorMessage
+  }
+}
+
+// New function to fetch transaction details by type and invoice number
+export const fetchTransactionDetails = (requestData: TransactionDetailsRequest) => async (dispatch: AppDispatch) => {
+  try {
+    dispatch(fetchTransactionDetailsStart())
+    const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken")
+    if (!token) throw new Error("No authentication token found")
+
+    const requestBody = {
+      type: requestData.type,
+      invoiceNo: requestData.invoiceNo,
+    }
+
+    const response = await axios.post(
+      `${API_CONFIG.BASE_URL}/inventory-service/api/v1/history/viewTransactionDetails`,
+      requestBody,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    )
+
+    // Check if response has the expected structure
+    if (response.data && response.data.transaction) {
+      dispatch(fetchTransactionDetailsSuccess(response.data))
+      return response.data
+    }
+
+    // If the API wraps the response in a success/data structure
+    if (response.data.success === true && response.data.data) {
+      dispatch(fetchTransactionDetailsSuccess(response.data.data))
+      return response.data.data
+    }
+
+    if (response.data.success === false) {
+      throw new Error(response.data.message || response.data.errorMessage || "Failed to fetch transaction details")
+    }
+
+    throw new Error("Invalid response format from server")
+  } catch (error: any) {
+    let errorMessage = "Failed to fetch transaction details"
+
+    if (error.response?.data) {
+      const apiError = error.response.data
+      errorMessage = apiError.message || apiError.errorMessage || "API request failed"
+    } else if (error.message) {
+      errorMessage = error.message
+    }
+
+    console.error("Transaction details fetch error:", errorMessage)
+    dispatch(fetchTransactionDetailsFailure(errorMessage))
+    throw errorMessage
+  }
+}
+
 export const selectProducts = (state: RootState) => state.product
 export const selectStockSummary = (state: RootState) => ({
   stockSummary: state.product.stockSummary,
@@ -801,6 +1118,18 @@ export const selectCreateProduct = (state: RootState) => ({
   error: state.product.createProductError,
   success: state.product.productSuccess,
   createdProduct: state.product.createdProduct,
+})
+// New selector for product transactions
+export const selectProductTransactions = (state: RootState) => ({
+  productTransactions: state.product.productTransactions,
+  loading: state.product.productTransactionsLoading,
+  error: state.product.productTransactionsError,
+})
+// New selector for transaction details
+export const selectTransactionDetails = (state: RootState) => ({
+  transactionDetails: state.product.transactionDetails,
+  loading: state.product.transactionDetailsLoading,
+  error: state.product.transactionDetailsError,
 })
 
 export default productSlice.reducer

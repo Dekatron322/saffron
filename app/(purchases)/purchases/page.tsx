@@ -1,6 +1,7 @@
 "use client"
 import DashboardNav from "components/Navbar/DashboardNav"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import TransactionIcon from "public/transaction-icon"
 import AccountIcon from "public/accounts-icon"
 import WarningIcon from "public/warning-icon"
@@ -13,7 +14,18 @@ import ReorderSummary from "components/Tables/ReorderSummary"
 import ReturnItems from "components/Tables/ReturnItems"
 
 const TableTabs = () => {
-  const [activeTab, setActiveTab] = useState(1)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const initialTab = Number(searchParams.get("tab")) || 1
+  const [activeTab, setActiveTab] = useState(initialTab)
+
+  // Keep activeTab in sync with the URL query param when it changes
+  useEffect(() => {
+    const nextTab = Number(searchParams.get("tab")) || 1
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab)
+    }
+  }, [searchParams, activeTab])
 
   const tabs = [
     { id: 1, label: "Purchase Overview", icon: <TransactionIcon /> },
@@ -49,7 +61,10 @@ const TableTabs = () => {
             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
               activeTab === tab.id ? "border-b-2 border-[#00a4a6] text-[#00a4a6]" : "text-gray-500 hover:text-gray-700"
             }`}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => {
+              setActiveTab(tab.id)
+              router.push(`/purchases?tab=${tab.id}`)
+            }}
           >
             {tab.icon}
             {tab.label}

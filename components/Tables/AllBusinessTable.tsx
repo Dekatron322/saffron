@@ -309,7 +309,7 @@ const AllBusinessTable = () => {
                     </td>
                     <td className="whitespace-nowrap border-b px-4 py-2 text-sm">
                       <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#EDF0F4]">
+                        <div className="flex size-8 items-center justify-center rounded-md bg-[#EDF0F4]">
                           <p>RB</p>
                         </div>
                         <div className="flex flex-col gap-0">

@@ -23,6 +23,7 @@ import { useAppDispatch, useAppSelector } from "app/api/store/store"
 import { fetchSalesByCustomerDetails } from "app/api/store/customerSlice"
 import { format } from "date-fns"
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa"
+import Link from "next/link"
 
 interface CustomerTableProps {
   customers: Customer[]
@@ -36,7 +37,7 @@ const SkeletonLoader = () => {
       <div className="w-1/4 rounded-md bg-white p-4">
         <div className="flex h-10 items-center gap-2">
           <div className="h-10 w-full animate-pulse rounded-md bg-gray-200"></div>
-          <div className="h-6 w-6 animate-pulse rounded-md bg-gray-200"></div>
+          <div className="size-6 animate-pulse rounded-md bg-gray-200"></div>
         </div>
         <div className="mt-3">
           <div className="h-6 w-3/4 animate-pulse rounded-md bg-gray-200"></div>
@@ -162,9 +163,12 @@ const CustomerTable = ({ customers, loading, error }: CustomerTableProps) => {
     setCurrentPage(0) // Reset to first page when selecting a new customer
   }, [])
 
-  const handleRepeatOrder = useCallback((orderId: string) => {
-    console.log(`Repeating order ${orderId}`)
-  }, [])
+  const handleRepeatOrder = useCallback(
+    (orderId: string) => {
+      router.push(`/sales/orders/create-order?repeatFrom=${orderId}`)
+    },
+    [router]
+  )
 
   const handleViewInvoice = useCallback(() => {
     router.push(`transactions/invoice-detail`)
@@ -343,9 +347,7 @@ const CustomerTable = ({ customers, loading, error }: CustomerTableProps) => {
                   whileTap={{ scale: 0.98 }}
                 >
                   <div className="flex items-center gap-3">
-                    <div
-                      className={`h-2 w-2 rounded-full ${customer.status === "Y" ? "bg-green-500" : "bg-red-500"}`}
-                    />
+                    <div className={`size-2 rounded-full ${customer.status === "Y" ? "bg-green-500" : "bg-red-500"}`} />
                     <div>
                       <p className="font-medium">{customer.customerName}</p>
                       <p className="text-xs text-gray-500">{customer.customerEmail}</p>
@@ -469,7 +471,7 @@ const CustomerTable = ({ customers, loading, error }: CustomerTableProps) => {
                           <div className="h-5 w-32 rounded bg-gray-200"></div>
                           <div className="h-5 w-20 rounded bg-gray-200"></div>
                         </div>
-                        <div className="mt-3 h-4 w-48 rounded bg-gray-200"></div>
+                        <div className="mt-3 size-48 rounded bg-gray-200"></div>
                         <div className="mt-2 flex items-center gap-2">
                           <div className="h-4 w-16 rounded bg-gray-200"></div>
                           <div className="h-4 w-24 rounded bg-gray-200"></div>
@@ -478,7 +480,20 @@ const CustomerTable = ({ customers, loading, error }: CustomerTableProps) => {
                     ))}
                   </div>
                 ) : customerSales.error ? (
-                  <div className="flex h-40 items-center justify-center text-red-500">{customerSales.error}</div>
+                  <motion.div
+                    className="flex w-full flex-col items-center justify-center gap-3"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <EmptyState />
+                    <p>Error loading transactions: {customerSales.error}.</p>
+                    <Link href="/sales/orders/create-order">
+                      <ButtonModule variant="primary" size="sm">
+                        <p className="max-sm:hidden">Create Order</p>
+                      </ButtonModule>
+                    </Link>
+                  </motion.div>
                 ) : customerSales.pagination.totalElements > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">

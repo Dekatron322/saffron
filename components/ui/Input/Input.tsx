@@ -12,6 +12,8 @@ interface FormInputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   className?: string
   error?: boolean
+  helperText?: string
+  disabled?: boolean
 }
 
 export const FormInputModule: React.FC<FormInputProps> = ({
@@ -22,7 +24,9 @@ export const FormInputModule: React.FC<FormInputProps> = ({
   name,
   onChange,
   className = "",
+  disabled = false,
   error = false,
+  helperText,
 }) => {
   const [isFocused, setIsFocused] = useState(false)
 
@@ -46,8 +50,10 @@ export const FormInputModule: React.FC<FormInputProps> = ({
           onChange={onChange}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
+          disabled={disabled}
         />
       </div>
+      {helperText && <p className={`mt-1 text-xs ${error ? "text-[#D14343]" : "text-gray-500"}`}>{helperText}</p>}
     </div>
   )
 }

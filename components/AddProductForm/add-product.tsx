@@ -616,7 +616,7 @@ const AddProduct: React.FC = () => {
               label="HSN Code *"
               options={hsnOptions}
               placeholder="Select HSN Code"
-              value={selectedHSNLabel}
+              value={formData.hsn ? formData.hsn.toString() : ""}
               onChange={handleHSNChange}
               className="w-full"
             />
@@ -703,7 +703,7 @@ const AddProduct: React.FC = () => {
                 type="checkbox"
                 checked={formData.refundable === "Y"}
                 onChange={handleCheckboxChange("refundable")}
-                className="mr-2 h-4 w-4 rounded border-[#E0E0E0] focus:ring-2 focus:ring-[#00a4a6]"
+                className="mr-2 size-4 rounded border-[#E0E0E0] focus:ring-2 focus:ring-[#00a4a6]"
               />
               Refundable
             </motion.label>
@@ -712,7 +712,7 @@ const AddProduct: React.FC = () => {
                 type="checkbox"
                 checked={formData.productStatus}
                 onChange={handleCheckboxChange("productStatus")}
-                className="mr-2 h-4 w-4 rounded border-[#E0E0E0] focus:ring-2 focus:ring-[#00a4a6]"
+                className="mr-2 size-4 rounded border-[#E0E0E0] focus:ring-2 focus:ring-[#00a4a6]"
               />
               Product Status
             </motion.label>
@@ -721,7 +721,7 @@ const AddProduct: React.FC = () => {
                 type="checkbox"
                 checked={formData.linkPayment}
                 onChange={handleCheckboxChange("linkPayment")}
-                className="mr-2 h-4 w-4 rounded border-[#E0E0E0] focus:ring-2 focus:ring-[#00a4a6]"
+                className="mr-2 size-4 rounded border-[#E0E0E0] focus:ring-2 focus:ring-[#00a4a6]"
               />
               Link Payment
             </motion.label>
@@ -730,7 +730,7 @@ const AddProduct: React.FC = () => {
                 type="checkbox"
                 checked={formData.inclusiveOfTax}
                 onChange={handleCheckboxChange("inclusiveOfTax")}
-                className="mr-2 h-4 w-4 rounded border-[#E0E0E0] focus:ring-2 focus:ring-[#00a4a6]"
+                className="mr-2 size-4 rounded border-[#E0E0E0] focus:ring-2 focus:ring-[#00a4a6]"
               />
               Inclusive of Tax
             </motion.label>

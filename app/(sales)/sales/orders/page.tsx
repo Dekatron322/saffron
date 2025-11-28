@@ -9,6 +9,7 @@ import TotalOrderTable from "components/Tables/TotalOrderTable"
 import PendingOrders from "components/Tables/PendingOrders"
 import CompletedOrders from "components/Tables/CompletedOrders"
 import CancelledOrders from "components/Tables/CancelledOrders"
+import Link from "next/link"
 
 const TableTabs = () => {
   const [activeTab, setActiveTab] = useState(1)
@@ -38,7 +39,7 @@ const TableTabs = () => {
 
   return (
     <div className="w-full">
-      <div className="flex border-b border-gray-200">
+      <div className="flex items-center border-b border-gray-200">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -51,6 +52,12 @@ const TableTabs = () => {
             {tab.label}
           </button>
         ))}
+        <Link
+          href="/sales/orders/create-order"
+          className="ml-auto items-center rounded-full border border-[#00a4a6] px-4 py-2 text-[#00a4a6]"
+        >
+          Create New Order
+        </Link>
       </div>
       <div className="mt-4">{renderTable()}</div>
     </div>
